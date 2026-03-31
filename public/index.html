@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pill Pal – AI Medicine Intelligence</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #eef2f7;
+      color: #1e293b;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 18px 24px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    header h1 { font-size: 1.75rem; font-weight: 700; color: #2563eb; letter-spacing: -0.5px; }
+    header p  { font-size: 0.875rem; color: #64748b; font-weight: 500; margin-bottom: 8px; }
+
+    /* ── Tabs ── */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      width: 100%;
+      max-width: 680px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 12px 16px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      transition: color .15s, border-color .15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
+    .tab-btn:hover:not(.active) { color: #334155; }
+
+    /* ── Layout ── */
+    main {
+      max-width: 680px;
+      margin: 28px auto;
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
+    }
+    .card-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #94a3b8;
+      margin-bottom: 16px;
+    }
+
+    /* ── Drop Zone ── */
+    #drop-zone {
+      border: 2px dashed #bfdbfe;
+      border-radius: 12px;
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      background: #f8faff;
+    }
+    #drop-zone.drag-over { border-color: #2563eb; background: #eff6ff; }
+    #drop-zone svg { margin-bottom: 12px; opacity: .5; }
+    #drop-zone p { font-size: 0.9rem; color: #64748b; margin-bottom: 4px; }
+    #drop-zone span { font-size: 0.78rem; color: #94a3b8; }
+    #file-input { display: none; }
+
+    /* ── Preview ── */
+    #preview-wrap { display: none; text-align: center; margin-top: 16px; }
+    #preview-wrap img {
+      max-height: 220px;
+      max-width: 100%;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      object-fit: contain;
+    }
+    #preview-wrap button {
+      margin-top: 10px;
+      background: none;
+      border: none;
+      font-size: 0.8rem;
+      color: #ef4444;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    /* ── Camera button ── */
+    .camera-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      margin-top: 14px;
+      padding: 11px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      background: #fff;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #475569;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .15s;
+    }
+    .camera-btn:hover { background: #f8fafc; }
+    #camera-input { display: none; }
+
+    /* ── Conditions ── */
+    .conditions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .condition-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      user-select: none;
+    }
+    .condition-item:has(input:checked) { border-color: #2563eb; background: #eff6ff; }
+    .condition-item input[type="checkbox"] {
+      accent-color: #2563eb;
+      width: 16px; height: 16px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .condition-item span { font-size: 0.85rem; font-weight: 500; color: #374151; }
+
+    /* ── Analyze button ── */
+    #analyze-btn {
+      width: 100%;
+      padding: 14px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .15s, transform .1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    #analyze-btn:hover:not(:disabled) { background: #1d4ed8; }
+    #analyze-btn:active:not(:disabled) { transform: scale(0.99); }
+    #analyze-btn:disabled { background: #93c5fd; cursor: not-allowed; }
+
+    /* ── Loading ── */
+    #loading { display: none; text-align: center; padding: 40px 20px; }
+    .spinner {
+      width: 48px; height: 48px;
+      border: 4px solid #bfdbfe;
+      border-top-color: #2563eb;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loading p { color: #64748b; font-weight: 500; }
+
+    /* ── Results ── */
+    #results { display: none; }
+
+    .medicine-name {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 4px;
+    }
+    .confidence-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: #dcfce7;
+      color: #166534;
+      margin-bottom: 20px;
+    }
+
+    .info-rows { display: flex; flex-direction: column; gap: 12px; }
+    .info-row {
+      display: flex;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .info-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .info-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      min-width: 100px;
+      padding-top: 1px;
+    }
+    .info-value { font-size: 0.9rem; color: #334155; line-height: 1.5; }
+
+    /* ── Section blocks ── */
+    .section-block { margin-top: 8px; }
+    .section-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+    .section-text {
+      font-size: 0.875rem;
+      color: #475569;
+      line-height: 1.65;
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 14px;
+      border-left: 3px solid #e2e8f0;
+    }
+    .section-text.warning-text { border-left-color: #f59e0b; background: #fffbeb; color: #78350f; }
+    .section-text.empty-text { color: #94a3b8; font-style: italic; }
+
+    /* ── Condition flags ── */
+    .flags-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .flag-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    .flag-badge.flagged   { background: #fee2e2; color: #991b1b; }
+    .flag-badge.unflagged { background: #dcfce7; color: #166534; }
+    .flag-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .flag-badge.flagged   .flag-dot { background: #ef4444; }
+    .flag-badge.unflagged .flag-dot { background: #10b981; }
+
+    /* ── Generic alternatives ── */
+    .alt-badges { display: flex; flex-wrap: wrap; gap: 8px; }
+    .alt-badge {
+      padding: 6px 14px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+
+    /* ── Food interactions ── */
+    .food-list { display: flex; flex-direction: column; gap: 8px; }
+    .food-item {
+      display: flex;
+      gap: 10px;
+      font-size: 0.875rem;
+      color: #475569;
+      line-height: 1.5;
+      padding: 10px 14px;
+      background: #fefce8;
+      border-left: 3px solid #facc15;
+      border-radius: 0 8px 8px 0;
+    }
+    .food-item-icon { flex-shrink: 0; }
+
+    /* ── Disclaimer ── */
+    .disclaimer {
+      display: flex;
+      gap: 12px;
+      padding: 14px 16px;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      color: #92400e;
+      line-height: 1.55;
+    }
+    .disclaimer-icon { font-size: 1.1rem; flex-shrink: 0; }
+
+    /* ── Error ── */
+    #error-box {
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 0.875rem;
+      color: #991b1b;
+      display: none;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    #error-box.visible { display: flex; }
+
+    /* ── Reset button ── */
+    #reset-btn {
+      width: 100%;
+      padding: 13px;
+      background: #f1f5f9;
+      color: #475569;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .15s;
+      margin-top: 8px;
+    }
+    #reset-btn:hover { background: #e2e8f0; }
+
+    /* ── Divider ── */
+    .divider { height: 1px; background: #f1f5f9; margin: 20px 0; }
+
+    /* ── Profile Bar ── */
+    .profile-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 680px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 10px 16px;
+      margin-bottom: 2px;
+    }
+    .profile-bar-left { display: flex; align-items: center; gap: 10px; }
+    .profile-avatar-lg { font-size: 1.5rem; line-height: 1; }
+    .profile-bar-label { font-size: 0.68rem; color: #64748b; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; }
+    .profile-bar-name  { font-size: 0.95rem; font-weight: 700; color: #1e40af; }
+    .profile-switch-btn {
+      padding: 7px 14px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .profile-switch-btn:hover { background: #1d4ed8; }
+
+    /* ── Profile Modal ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal-box {
+      background: #fff;
+      border-radius: 20px;
+      padding: 24px;
+      width: 100%;
+      max-width: 480px;
+      max-height: 85vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; }
+    .modal-header h2 { font-size: 1.05rem; font-weight: 700; color: #1e293b; }
+    .modal-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b; padding: 4px; line-height: 1; }
+
+    .profile-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+    .profile-card:hover { border-color: #2563eb; background: #f8faff; }
+    .profile-card.active { border-color: #2563eb; background: #eff6ff; }
+    .profile-card-avatar { font-size: 1.7rem; flex-shrink: 0; }
+    .profile-card-info { flex: 1; min-width: 0; }
+    .profile-card-name { font-weight: 700; color: #1e293b; font-size: 0.9rem; }
+    .profile-card-relation { font-size: 0.75rem; color: #64748b; }
+    .profile-card-conditions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+    .profile-cond-chip { font-size: 0.67rem; padding: 2px 8px; background: #eff6ff; color: #2563eb; border-radius: 999px; font-weight: 600; }
+    .profile-delete-btn { background: none; border: none; color: #ef4444; cursor: pointer; padding: 6px; font-size: 1rem; opacity: .65; transition: opacity .15s; flex-shrink: 0; }
+    .profile-delete-btn:hover { opacity: 1; }
+
+    .add-profile-btn {
+      width: 100%;
+      padding: 12px;
+      background: #f8fafc;
+      border: 2px dashed #e2e8f0;
+      border-radius: 12px;
+      color: #475569;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color .15s, background .15s, color .15s;
+    }
+    .add-profile-btn:hover { border-color: #2563eb; background: #eff6ff; color: #2563eb; }
+
+    .add-profile-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+      background: #f8fafc;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+    }
+    .form-field { display: flex; flex-direction: column; gap: 5px; }
+    .form-label { font-size: 0.72rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .05em; }
+    .form-input, .form-select {
+      padding: 9px 13px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.875rem;
+      color: #1e293b;
+      background: #fff;
+      outline: none;
+    }
+    .form-input:focus, .form-select:focus { border-color: #2563eb; }
+    .form-conditions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .form-condition-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 10px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #374151;
+      background: #fff;
+      user-select: none;
+    }
+    .form-condition-item:has(input:checked) { border-color: #2563eb; background: #eff6ff; }
+    .form-condition-item input { accent-color: #2563eb; width: 14px; height: 14px; flex-shrink: 0; }
+    .save-profile-btn {
+      padding: 10px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .save-profile-btn:hover { background: #1d4ed8; }
+
+    /* ── Drug Checker panel ── */
+    #checker-panel { display: none; }
+
+    .checker-inputs {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .checker-input-group { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .checker-input-group label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: #94a3b8;
+    }
+    .checker-input-group input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: #1e293b;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .checker-input-group input:focus { border-color: #2563eb; }
+    .checker-input-group select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.8rem;
+      color: #475569;
+      background: #f8fafc;
+      outline: none;
+      cursor: pointer;
+    }
+    .vs-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #94a3b8;
+      background: #f1f5f9;
+      border-radius: 999px;
+      padding: 6px 10px;
+      flex-shrink: 0;
+      margin-top: 20px;
+    }
+
+    #check-btn {
+      width: 100%;
+      padding: 14px;
+      background: #7c3aed;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .15s, transform .1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    #check-btn:hover:not(:disabled) { background: #6d28d9; }
+    #check-btn:active:not(:disabled) { transform: scale(0.99); }
+    #check-btn:disabled { background: #c4b5fd; cursor: not-allowed; }
+
+    #checker-loading { display: none; text-align: center; padding: 40px 20px; }
+
+    #checker-results { display: none; }
+
+    .severity-banner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    .severity-banner.none     { background: #dcfce7; }
+    .severity-banner.mild     { background: #fef9c3; }
+    .severity-banner.moderate { background: #ffedd5; }
+    .severity-banner.severe   { background: #fee2e2; }
+
+    .severity-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 999px;
+      flex-shrink: 0;
+    }
+    .severity-banner.none     .severity-badge { background: #16a34a; color: #fff; }
+    .severity-banner.mild     .severity-badge { background: #ca8a04; color: #fff; }
+    .severity-banner.moderate .severity-badge { background: #ea580c; color: #fff; }
+    .severity-banner.severe   .severity-badge { background: #dc2626; color: #fff; }
+
+    .severity-summary { font-size: 0.9rem; font-weight: 500; color: #1e293b; line-height: 1.5; }
+
+    .effects-list { display: flex; flex-direction: column; gap: 8px; }
+    .effect-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 0.875rem;
+      color: #475569;
+      line-height: 1.5;
+    }
+    .effect-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #7c3aed;
+      flex-shrink: 0;
+      margin-top: 6px;
+    }
+
+    .recommendation-box {
+      display: flex;
+      gap: 12px;
+      padding: 14px 16px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      color: #15803d;
+      line-height: 1.55;
+    }
+    .recommendation-icon { font-size: 1.1rem; flex-shrink: 0; }
+
+    /* ── History panel ── */
+    #history-panel { display: none; }
+
+    .history-empty {
+      text-align: center;
+      padding: 48px 20px;
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+    .history-empty div { font-size: 2.5rem; margin-bottom: 12px; }
+
+    /* ── History scan card ── */
+    .scan-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 20px 22px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.04);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .scan-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .scan-card-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .scan-card-date {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      white-space: nowrap;
+      padding-top: 2px;
+    }
+    .scan-card-conditions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .condition-chip {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #2563eb;
+    }
+    .scan-card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .btn-view-details {
+      flex: 1;
+      padding: 9px 14px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-view-details:hover { background: #1d4ed8; }
+    .btn-delete {
+      padding: 9px 13px;
+      background: #fee2e2;
+      color: #991b1b;
+      border: none;
+      border-radius: 9px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn-delete:hover { background: #fecaca; }
+
+    /* ── History detail overlay ── */
+    #history-detail { display: none; }
+    #history-detail .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #2563eb;
+      cursor: pointer;
+      padding: 0;
+      margin-bottom: 4px;
+    }
+    #history-detail .back-btn:hover { color: #1d4ed8; }
+
+    @media (max-width: 480px) {
+      .card { padding: 20px 16px; }
+      .medicine-name { font-size: 1.3rem; }
+      .conditions-grid { grid-template-columns: 1fr 1fr; }
+      .scan-card { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>💊 Pill Pal</h1>
+    <p>AI-powered medicine intelligence</p>
+
+    <div class="profile-bar">
+      <div class="profile-bar-left">
+        <span class="profile-avatar-lg" id="active-avatar">🧑</span>
+        <div>
+          <div class="profile-bar-label">Scanning for</div>
+          <div class="profile-bar-name" id="active-name">Myself</div>
+        </div>
+      </div>
+      <button class="profile-switch-btn" id="profile-switch-btn">Switch Profile</button>
+    </div>
+
+    <nav class="tab-bar" role="tablist">
+      <button class="tab-btn active" id="tab-scan" role="tab" aria-selected="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 16h4m10 0h4"/>
+        </svg>
+        Scan
+      </button>
+      <button class="tab-btn" id="tab-cabinet" role="tab" aria-selected="false">
+        🗄️ Medicine Cabinet
+      </button>
+      <button class="tab-btn" id="tab-checker" role="tab" aria-selected="false">
+        💊⚡ Drug Checker
+      </button>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- ══ SCAN TAB ══ -->
+    <div id="scan-panel">
+
+      <!-- Error -->
+      <div id="error-box" role="alert">
+        <span>⚠️</span>
+        <span id="error-msg">Something went wrong. Please try again.</span>
+      </div>
+
+      <!-- Upload section -->
+      <section id="upload-section">
+        <div class="card">
+          <div class="card-title">Upload Medicine Image</div>
+
+          <div id="drop-zone" role="button" tabindex="0" aria-label="Upload medicine image">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="#2563eb" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+            </svg>
+            <p>Drag & drop a medicine image here</p>
+            <span>or click to browse files</span>
+          </div>
+          <input type="file" id="file-input" accept="image/*">
+
+          <div id="preview-wrap">
+            <img id="preview-img" src="" alt="Medicine preview">
+            <br>
+            <button id="clear-img-btn">✕ Remove image</button>
+          </div>
+
+          <button class="camera-btn" id="camera-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"/>
+            </svg>
+            Or take a photo
+          </button>
+          <input type="file" id="camera-input" accept="image/*" capture="environment">
+        </div>
+
+        <div class="card">
+          <div class="card-title">Your Health Conditions (optional)</div>
+          <p style="font-size:0.82rem;color:#64748b;margin-bottom:14px;">Select any conditions so we can flag potential interactions.</p>
+          <div class="conditions-grid">
+            <label class="condition-item">
+              <input type="checkbox" value="high_bp">
+              <span>🩸 High BP</span>
+            </label>
+            <label class="condition-item">
+              <input type="checkbox" value="low_bp">
+              <span>💧 Low BP</span>
+            </label>
+            <label class="condition-item">
+              <input type="checkbox" value="diabetes">
+              <span>🍬 Diabetes</span>
+            </label>
+            <label class="condition-item">
+              <input type="checkbox" value="thyroid">
+              <span>🦋 Thyroid</span>
+            </label>
+            <label class="condition-item">
+              <input type="checkbox" value="kidney">
+              <span>🫘 Kidney Issues</span>
+            </label>
+          </div>
+        </div>
+
+        <button id="analyze-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1 1 .03 2.798-1.415 2.798H4.213c-1.445 0-2.414-1.798-1.414-2.798L4.2 15.3"/>
+          </svg>
+          Analyze Medicine
+        </button>
+      </section>
+
+      <!-- Loading -->
+      <div id="loading" class="card">
+        <div class="spinner"></div>
+        <p>Analyzing your medicine…</p>
+      </div>
+
+      <!-- Results -->
+      <section id="results">
+        <div class="card">
+          <div id="medicine-name" class="medicine-name"></div>
+          <div id="confidence-badge" class="confidence-badge"></div>
+
+          <div class="info-rows">
+            <div class="info-row">
+              <span class="info-label">Manufacturer</span>
+              <span class="info-value" id="res-manufacturer">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Dosage</span>
+              <span class="info-value" id="res-dosage">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Usage</span>
+              <span class="info-value" id="res-usage">—</span>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="section-block">
+            <div class="section-label">Side Effects</div>
+            <div class="section-text" id="res-adverse"></div>
+          </div>
+
+          <div class="section-block" style="margin-top:16px;">
+            <div class="section-label">Warnings</div>
+            <div class="section-text warning-text" id="res-warnings"></div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="section-block">
+            <div class="section-label">Generic Alternatives</div>
+            <div id="res-generics" class="alt-badges"></div>
+          </div>
+
+          <div class="section-block" style="margin-top:16px;">
+            <div class="section-label">Food Interactions</div>
+            <div id="res-food" class="food-list"></div>
+          </div>
+        </div>
+
+        <!-- Condition flags -->
+        <div class="card" id="flags-card" style="display:none;">
+          <div class="card-title">Condition Flags</div>
+          <div class="flags-grid" id="flags-grid"></div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer">
+          <span class="disclaimer-icon">⚕️</span>
+          <span>This is general medicine information only and not medical advice. Consult a doctor or pharmacist before making any health decisions.</span>
+        </div>
+
+        <button id="reset-btn">↩ Analyze Another Medicine</button>
+      </section>
+
+    </div><!-- /scan-panel -->
+
+    <!-- ══ HISTORY TAB ══ -->
+    <div id="history-panel">
+
+      <!-- List view -->
+      <div id="history-list-view">
+        <div id="history-list" style="display:flex;flex-direction:column;gap:14px;"></div>
+      </div>
+
+      <!-- Detail view -->
+      <div id="history-detail">
+        <button class="back-btn" id="history-back-btn">
+          ← Back to Medicine Cabinet
+        </button>
+
+        <div class="card" style="margin-top:12px;">
+          <div id="h-medicine-name" class="medicine-name"></div>
+          <div id="h-confidence-badge" class="confidence-badge" style="display:none;"></div>
+
+          <div class="info-rows">
+            <div class="info-row">
+              <span class="info-label">Manufacturer</span>
+              <span class="info-value" id="h-manufacturer">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Dosage</span>
+              <span class="info-value" id="h-dosage">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Usage</span>
+              <span class="info-value" id="h-usage">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Scanned</span>
+              <span class="info-value" id="h-date">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="h-flags-card" style="display:none; margin-top: 0;">
+          <div class="card-title">Condition Flags</div>
+          <div class="flags-grid" id="h-flags-grid"></div>
+        </div>
+
+        <div class="card" style="margin-top:0;">
+          <div class="section-block">
+            <div class="section-label">Generic Alternatives</div>
+            <div id="h-generics" class="alt-badges"></div>
+          </div>
+          <div class="section-block" style="margin-top:16px;">
+            <div class="section-label">Food Interactions</div>
+            <div id="h-food" class="food-list"></div>
+          </div>
+        </div>
+
+        <div class="disclaimer" style="margin-top:0;">
+          <span class="disclaimer-icon">⚕️</span>
+          <span>This is general medicine information only and not medical advice. Consult a doctor or pharmacist before making any health decisions.</span>
+        </div>
+      </div>
+
+    </div><!-- /history-panel -->
+
+    <!-- ══ DRUG CHECKER TAB ══ -->
+    <div id="checker-panel">
+
+      <div class="card">
+        <div class="card-title">Check Drug Interactions</div>
+        <p style="font-size:0.82rem;color:#64748b;margin-bottom:18px;">Enter two medicines to check if they interact with each other.</p>
+
+        <div class="checker-inputs">
+          <div class="checker-input-group">
+            <label for="med1-input">Medicine 1</label>
+            <input type="text" id="med1-input" placeholder="e.g. Aspirin">
+            <select id="med1-select">
+              <option value="">Quick add from Cabinet…</option>
+            </select>
+          </div>
+          <div class="vs-badge">VS</div>
+          <div class="checker-input-group">
+            <label for="med2-input">Medicine 2</label>
+            <input type="text" id="med2-input" placeholder="e.g. Ibuprofen">
+            <select id="med2-select">
+              <option value="">Quick add from Cabinet…</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <button id="check-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9.348 14.651a3.75 3.75 0 010-5.303m5.304 0a3.75 3.75 0 010 5.303m-7.425 2.122a6.75 6.75 0 010-9.546m9.546 0a6.75 6.75 0 010 9.546M5.106 18.894c-3.808-3.808-3.808-9.98 0-13.789m13.788 0c3.808 3.808 3.808 9.981 0 13.789M12 12h.008v.008H12V12z"/>
+        </svg>
+        Check Interactions
+      </button>
+
+      <!-- Checker loading -->
+      <div id="checker-loading" class="card">
+        <div class="spinner"></div>
+        <p>Checking for interactions…</p>
+      </div>
+
+      <!-- Checker results -->
+      <div id="checker-results">
+        <div class="card">
+          <div id="severity-banner" class="severity-banner">
+            <span id="severity-badge" class="severity-badge"></span>
+            <span id="severity-summary" class="severity-summary"></span>
+          </div>
+
+          <div class="section-block">
+            <div class="section-label">Interaction Effects</div>
+            <div id="checker-effects" class="effects-list"></div>
+          </div>
+
+          <div class="section-block" style="margin-top:16px;">
+            <div class="section-label">Recommendation</div>
+            <div class="recommendation-box">
+              <span class="recommendation-icon">💬</span>
+              <span id="checker-recommendation"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="disclaimer">
+          <span class="disclaimer-icon">⚕️</span>
+          <span>This is general medicine information only and not medical advice. Consult a doctor or pharmacist before making any health decisions.</span>
+        </div>
+      </div>
+
+    </div><!-- /checker-panel -->
+
+  </main>
+
+  <!-- ══ PROFILE MODAL ══ -->
+  <div id="profile-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>👨‍👩‍👧‍👦 Family Profiles</h2>
+        <button class="modal-close" id="modal-close-btn">✕</button>
+      </div>
+
+      <div id="modal-profile-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+
+      <button class="add-profile-btn" id="show-add-profile-btn">+ Add New Profile</button>
+
+      <div id="add-profile-form" class="add-profile-form" style="display:none;">
+        <div class="form-field">
+          <label class="form-label">Name</label>
+          <input type="text" id="new-profile-name" class="form-input" placeholder="e.g. Mom">
+        </div>
+        <div class="form-field">
+          <label class="form-label">Relation</label>
+          <select id="new-profile-relation" class="form-select">
+            <option value="Myself">Myself</option>
+            <option value="Spouse">Spouse</option>
+            <option value="Parent">Parent</option>
+            <option value="Child">Child</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Health Conditions</label>
+          <div class="form-conditions">
+            <label class="form-condition-item"><input type="checkbox" value="high_bp"> 🩸 High BP</label>
+            <label class="form-condition-item"><input type="checkbox" value="low_bp"> 💧 Low BP</label>
+            <label class="form-condition-item"><input type="checkbox" value="diabetes"> 🍬 Diabetes</label>
+            <label class="form-condition-item"><input type="checkbox" value="thyroid"> 🦋 Thyroid</label>
+            <label class="form-condition-item"><input type="checkbox" value="kidney"> 🫘 Kidney</label>
+          </div>
+        </div>
+        <button class="save-profile-btn" id="save-profile-btn">Save Profile</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ════════════════════════════════════════
+       State & element refs
+    ════════════════════════════════════════ */
+    let selectedFile   = null;
+    let activeProfile  = { id: null, name: 'Myself', relation: 'Myself', conditions: [] };
+
+    const RELATION_EMOJIS  = { Myself: '🧑', Spouse: '💑', Parent: '👴', Child: '👶', Other: '👤' };
+    const CONDITION_LABELS = { high_bp: 'High BP', low_bp: 'Low BP', diabetes: 'Diabetes', thyroid: 'Thyroid', kidney: 'Kidney' };
+
+    const dropZone      = document.getElementById('drop-zone');
+    const fileInput     = document.getElementById('file-input');
+    const cameraBtn     = document.getElementById('camera-btn');
+    const cameraInput   = document.getElementById('camera-input');
+    const previewWrap   = document.getElementById('preview-wrap');
+    const previewImg    = document.getElementById('preview-img');
+    const clearImgBtn   = document.getElementById('clear-img-btn');
+    const analyzeBtn    = document.getElementById('analyze-btn');
+    const uploadSection = document.getElementById('upload-section');
+    const loadingEl     = document.getElementById('loading');
+    const resultsEl     = document.getElementById('results');
+    const errorBox      = document.getElementById('error-box');
+    const errorMsg      = document.getElementById('error-msg');
+    const scanPanel     = document.getElementById('scan-panel');
+    const historyPanel  = document.getElementById('history-panel');
+    const checkerPanel  = document.getElementById('checker-panel');
+    const tabScan       = document.getElementById('tab-scan');
+    const tabCabinet    = document.getElementById('tab-cabinet');
+    const tabChecker    = document.getElementById('tab-checker');
+
+    /* ════════════════════════════════════════
+       Tabs
+    ════════════════════════════════════════ */
+    function setActiveTab(active) {
+      [tabScan, tabCabinet, tabChecker].forEach(t => t.classList.remove('active'));
+      [scanPanel, historyPanel, checkerPanel].forEach(p => { p.style.display = 'none'; });
+      active.classList.add('active');
+    }
+
+    tabScan.addEventListener('click', () => {
+      setActiveTab(tabScan);
+      scanPanel.style.display = 'flex';
+      scanPanel.style.flexDirection = 'column';
+      scanPanel.style.gap = '20px';
+    });
+
+    tabCabinet.addEventListener('click', () => {
+      setActiveTab(tabCabinet);
+      historyPanel.style.display = 'block';
+      loadHistory();
+    });
+
+    tabChecker.addEventListener('click', () => {
+      setActiveTab(tabChecker);
+      checkerPanel.style.display = 'block';
+      populateCheckerDropdowns();
+    });
+
+    /* ════════════════════════════════════════
+       Profile helpers
+    ════════════════════════════════════════ */
+    function getRelationEmoji(relation) {
+      return RELATION_EMOJIS[relation] || '👤';
+    }
+
+    function updateProfileBar() {
+      document.getElementById('active-avatar').textContent = getRelationEmoji(activeProfile.relation);
+      document.getElementById('active-name').textContent   = activeProfile.name;
+    }
+
+    function prefillConditions(conditions) {
+      document.querySelectorAll('.condition-item input').forEach(cb => {
+        cb.checked = (conditions || []).includes(cb.value);
+      });
+    }
+
+    function historyQueryParam() {
+      return activeProfile.id !== null ? `?profile_id=${activeProfile.id}` : '?profile_id=null';
+    }
+
+    function selectProfile(profile) {
+      activeProfile = profile;
+      updateProfileBar();
+      prefillConditions(profile.conditions || []);
+      closeProfileModal();
+      if (historyPanel.style.display !== 'none') loadHistory();
+      if (checkerPanel.style.display  !== 'none') populateCheckerDropdowns();
+    }
+
+    function openProfileModal() {
+      document.getElementById('profile-modal').classList.remove('hidden');
+      loadProfilesInModal();
+    }
+    function closeProfileModal() {
+      document.getElementById('profile-modal').classList.add('hidden');
+      document.getElementById('add-profile-form').style.display = 'none';
+    }
+
+    document.getElementById('profile-switch-btn').addEventListener('click', openProfileModal);
+    document.getElementById('modal-close-btn').addEventListener('click', closeProfileModal);
+    document.getElementById('profile-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeProfileModal();
+    });
+
+    document.getElementById('show-add-profile-btn').addEventListener('click', () => {
+      const form = document.getElementById('add-profile-form');
+      form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+    });
+
+    document.getElementById('save-profile-btn').addEventListener('click', async () => {
+      const name       = document.getElementById('new-profile-name').value.trim();
+      const relation   = document.getElementById('new-profile-relation').value;
+      const conditions = Array.from(
+        document.querySelectorAll('#add-profile-form .form-condition-item input:checked')
+      ).map(cb => cb.value);
+
+      if (!name) { alert('Please enter a name.'); return; }
+
+      try {
+        const res = await fetch('/api/profiles', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, relation, conditions }),
+        });
+        if (!res.ok) throw new Error('Failed to create profile');
+        document.getElementById('new-profile-name').value = '';
+        document.getElementById('new-profile-relation').value = 'Myself';
+        document.querySelectorAll('#add-profile-form .form-condition-item input').forEach(cb => cb.checked = false);
+        document.getElementById('add-profile-form').style.display = 'none';
+        loadProfilesInModal();
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    async function loadProfilesInModal() {
+      const listEl = document.getElementById('modal-profile-list');
+      listEl.innerHTML = '<p style="color:#94a3b8;font-size:0.85rem;padding:8px 0;">Loading…</p>';
+
+      try {
+        const res      = await fetch('/api/profiles');
+        const profiles = await res.json();
+
+        listEl.innerHTML = '';
+
+        // "Myself" default card
+        const myselfCard = document.createElement('div');
+        myselfCard.className = `profile-card ${activeProfile.id === null ? 'active' : ''}`;
+        myselfCard.innerHTML = `
+          <div class="profile-card-avatar">🧑</div>
+          <div class="profile-card-info">
+            <div class="profile-card-name">Myself</div>
+            <div class="profile-card-relation">Default profile</div>
+          </div>`;
+        myselfCard.addEventListener('click', () =>
+          selectProfile({ id: null, name: 'Myself', relation: 'Myself', conditions: [] })
+        );
+        listEl.appendChild(myselfCard);
+
+        profiles.forEach(p => {
+          const conds = JSON.parse(p.conditions || '[]');
+          const chips = conds.map(c => `<span class="profile-cond-chip">${CONDITION_LABELS[c] || c}</span>`).join('');
+
+          const card = document.createElement('div');
+          card.className = `profile-card ${activeProfile.id === p.id ? 'active' : ''}`;
+          card.innerHTML = `
+            <div class="profile-card-avatar">${getRelationEmoji(p.relation)}</div>
+            <div class="profile-card-info">
+              <div class="profile-card-name">${p.name}</div>
+              <div class="profile-card-relation">${p.relation}</div>
+              ${chips ? `<div class="profile-card-conditions">${chips}</div>` : ''}
+            </div>
+            <button class="profile-delete-btn" title="Delete profile">🗑️</button>`;
+
+          card.querySelector('.profile-delete-btn').addEventListener('click', async (e) => {
+            e.stopPropagation();
+            if (!confirm(`Delete profile "${p.name}" and all their scans?`)) return;
+            await fetch(`/api/profiles/${p.id}`, { method: 'DELETE' });
+            if (activeProfile.id === p.id) {
+              selectProfile({ id: null, name: 'Myself', relation: 'Myself', conditions: [] });
+            }
+            loadProfilesInModal();
+          });
+
+          card.addEventListener('click', () =>
+            selectProfile({ ...p, conditions: JSON.parse(p.conditions || '[]') })
+          );
+          listEl.appendChild(card);
+        });
+      } catch (_) {
+        listEl.innerHTML = '<p style="color:#ef4444;font-size:0.85rem;">Failed to load profiles.</p>';
+      }
+    }
+
+    /* ════════════════════════════════════════
+       File selection
+    ════════════════════════════════════════ */
+    function setFile(file) {
+      if (!file || !file.type.startsWith('image/')) return;
+      selectedFile = file;
+      previewImg.src = URL.createObjectURL(file);
+      previewWrap.style.display = 'block';
+      dropZone.style.display = 'none';
+      document.querySelector('.camera-btn').style.display = 'none';
+    }
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
+    fileInput.addEventListener('change', () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
+
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+    });
+
+    cameraBtn.addEventListener('click', () => cameraInput.click());
+    cameraInput.addEventListener('change', () => { if (cameraInput.files[0]) setFile(cameraInput.files[0]); });
+
+    clearImgBtn.addEventListener('click', () => {
+      selectedFile = null;
+      previewWrap.style.display = 'none';
+      dropZone.style.display = 'block';
+      document.querySelector('.camera-btn').style.display = 'flex';
+      fileInput.value = '';
+      cameraInput.value = '';
+    });
+
+    /* ════════════════════════════════════════
+       Helpers
+    ════════════════════════════════════════ */
+    function showError(msg) {
+      errorMsg.textContent = msg;
+      errorBox.classList.add('visible');
+    }
+    function hideError() {
+      errorBox.classList.remove('visible');
+    }
+    function setText(id, text, emptyLabel) {
+      const el = document.getElementById(id);
+      if (text && text.trim()) {
+        el.textContent = text;
+        el.classList.remove('empty-text');
+      } else {
+        el.textContent = emptyLabel || 'No information available.';
+        el.classList.add('empty-text');
+      }
+    }
+    function renderFlagBadges(container, flags) {
+      container.innerHTML = '';
+      flags.forEach(flag => {
+        const badge = document.createElement('div');
+        badge.className = `flag-badge ${flag.flagged ? 'flagged' : 'unflagged'}`;
+        badge.title = flag.reason;
+        badge.innerHTML = `<span class="flag-dot"></span>${flag.label}`;
+        container.appendChild(badge);
+      });
+    }
+    function formatDate(dt) {
+      return new Date(dt + 'Z').toLocaleString(undefined, {
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    }
+
+    /* ════════════════════════════════════════
+       Analyze
+    ════════════════════════════════════════ */
+    analyzeBtn.addEventListener('click', async () => {
+      hideError();
+      if (!selectedFile) { showError('Please select or capture a medicine image first.'); return; }
+
+      const conditions = Array.from(document.querySelectorAll('.condition-item input:checked')).map(cb => cb.value);
+      const formData = new FormData();
+      formData.append('medicine', selectedFile);
+      formData.append('conditions', JSON.stringify(conditions));
+      formData.append('profile_id', activeProfile.id !== null ? String(activeProfile.id) : 'null');
+
+      uploadSection.style.display = 'none';
+      loadingEl.style.display = 'block';
+      analyzeBtn.disabled = true;
+
+      try {
+        const response = await fetch('/api/analyze', { method: 'POST', body: formData });
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || `Server error ${response.status}`);
+
+        document.getElementById('medicine-name').textContent = data.name || 'Unknown Medicine';
+        document.getElementById('confidence-badge').textContent = data.confidence
+          ? `Confidence: ${data.confidence}` : 'Identified';
+
+        document.getElementById('res-manufacturer').textContent = data.manufacturer || '—';
+        document.getElementById('res-dosage').textContent       = data.dosage       || '—';
+        document.getElementById('res-usage').textContent        = data.usage        || '—';
+
+        setText('res-adverse',  data.adverse_reactions, 'No adverse reaction data from FDA.');
+        setText('res-warnings', data.warnings,          'No warning data from FDA.');
+
+        // Generic alternatives
+        const genericsEl = document.getElementById('res-generics');
+        genericsEl.innerHTML = '';
+        if (data.generic_alternatives && data.generic_alternatives.length > 0) {
+          data.generic_alternatives.forEach(alt => {
+            const badge = document.createElement('span');
+            badge.className = 'alt-badge';
+            badge.textContent = alt;
+            genericsEl.appendChild(badge);
+          });
+        } else {
+          genericsEl.innerHTML = '<span style="font-size:0.85rem;color:#94a3b8;font-style:italic;">No generic data available.</span>';
+        }
+
+        // Food interactions
+        const foodEl = document.getElementById('res-food');
+        foodEl.innerHTML = '';
+        if (data.food_interactions && data.food_interactions.length > 0) {
+          data.food_interactions.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'food-item';
+            div.innerHTML = `<span class="food-item-icon">⚠️</span><span>${item}</span>`;
+            foodEl.appendChild(div);
+          });
+        } else {
+          foodEl.innerHTML = '<span style="font-size:0.85rem;color:#94a3b8;font-style:italic;">No food interaction data available.</span>';
+        }
+
+        const flagsCard = document.getElementById('flags-card');
+        const flagsGrid = document.getElementById('flags-grid');
+        if (data.condition_flags && data.condition_flags.length > 0) {
+          flagsCard.style.display = 'block';
+          renderFlagBadges(flagsGrid, data.condition_flags);
+        } else {
+          flagsCard.style.display = 'none';
+        }
+
+        loadingEl.style.display = 'none';
+        resultsEl.style.display = 'block';
+
+      } catch (err) {
+        loadingEl.style.display = 'none';
+        uploadSection.style.display = 'block';
+        analyzeBtn.disabled = false;
+        showError(err.message || 'Failed to analyze image. Please try again.');
+      }
+    });
+
+    /* ════════════════════════════════════════
+       Reset (scan tab)
+    ════════════════════════════════════════ */
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      selectedFile = null;
+      fileInput.value = '';
+      cameraInput.value = '';
+      previewWrap.style.display = 'none';
+      dropZone.style.display = 'block';
+      document.querySelector('.camera-btn').style.display = 'flex';
+      document.querySelectorAll('.condition-item input').forEach(cb => cb.checked = false);
+      resultsEl.style.display = 'none';
+      uploadSection.style.display = 'block';
+      analyzeBtn.disabled = false;
+      hideError();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    /* ════════════════════════════════════════
+       History
+    ════════════════════════════════════════ */
+    async function loadHistory() {
+      const listView   = document.getElementById('history-list-view');
+      const detailView = document.getElementById('history-detail');
+      listView.style.display   = 'block';
+      detailView.style.display = 'none';
+
+      const listEl = document.getElementById('history-list');
+      listEl.innerHTML = '<p style="color:#94a3b8;font-size:0.875rem;text-align:center;padding:24px 0;">Loading…</p>';
+
+      try {
+        const res   = await fetch(`/api/history${historyQueryParam()}`);
+        const scans = await res.json();
+
+        if (!scans.length) {
+          listEl.innerHTML = `
+            <div class="history-empty">
+              <div>💊</div>
+              No scans yet for ${activeProfile.name}. Start by scanning a medicine!
+            </div>`;
+          return;
+        }
+
+        listEl.innerHTML = '';
+        scans.forEach(scan => {
+          const card = document.createElement('div');
+          card.className = 'scan-card';
+
+          const conditionChips = (scan.conditions || []).map(c => {
+            const labels = { high_bp:'High BP', low_bp:'Low BP', diabetes:'Diabetes', thyroid:'Thyroid', kidney:'Kidney' };
+            return `<span class="condition-chip">${labels[c] || c}</span>`;
+          }).join('');
+
+          card.innerHTML = `
+            <div class="scan-card-header">
+              <div class="scan-card-name">${scan.medicine_name || 'Unknown'}</div>
+              <div class="scan-card-date">${formatDate(scan.scanned_at)}</div>
+            </div>
+            ${conditionChips ? `<div class="scan-card-conditions">${conditionChips}</div>` : ''}
+            <div class="scan-card-actions">
+              <button class="btn-view-details" data-id="${scan.id}">View Details</button>
+              <button class="btn-delete" data-id="${scan.id}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                Delete
+              </button>
+            </div>`;
+
+          card.querySelector('.btn-view-details').addEventListener('click', () => showHistoryDetail(scan));
+          card.querySelector('.btn-delete').addEventListener('click', () => deleteScan(scan.id, card));
+
+          listEl.appendChild(card);
+        });
+      } catch (err) {
+        listEl.innerHTML = `<p style="color:#ef4444;font-size:0.875rem;text-align:center;padding:24px 0;">Failed to load history.</p>`;
+      }
+    }
+
+    async function deleteScan(id, cardEl) {
+      try {
+        await fetch(`/api/history/${id}`, { method: 'DELETE' });
+        cardEl.style.transition = 'opacity .2s';
+        cardEl.style.opacity = '0';
+        setTimeout(() => {
+          cardEl.remove();
+          const listEl = document.getElementById('history-list');
+          if (!listEl.children.length) {
+            listEl.innerHTML = `
+              <div class="history-empty">
+                <div>💊</div>
+                No scans yet. Start by scanning a medicine!
+              </div>`;
+          }
+        }, 200);
+      } catch (err) {
+        alert('Failed to delete scan.');
+      }
+    }
+
+    function showHistoryDetail(scan) {
+      const listView   = document.getElementById('history-list-view');
+      const detailView = document.getElementById('history-detail');
+      listView.style.display   = 'none';
+      detailView.style.display = 'block';
+
+      document.getElementById('h-medicine-name').textContent  = scan.medicine_name || 'Unknown Medicine';
+      document.getElementById('h-manufacturer').textContent   = scan.manufacturer  || '—';
+      document.getElementById('h-dosage').textContent         = scan.dosage        || '—';
+      document.getElementById('h-usage').textContent          = scan.usage         || '—';
+      document.getElementById('h-date').textContent           = formatDate(scan.scanned_at);
+
+      const hFlagsCard = document.getElementById('h-flags-card');
+      const hFlagsGrid = document.getElementById('h-flags-grid');
+      if (scan.condition_flags && scan.condition_flags.length > 0) {
+        hFlagsCard.style.display = 'block';
+        renderFlagBadges(hFlagsGrid, scan.condition_flags);
+      } else {
+        hFlagsCard.style.display = 'none';
+      }
+
+      // Generic alternatives
+      const hGenericsEl = document.getElementById('h-generics');
+      hGenericsEl.innerHTML = '';
+      if (scan.generic_alternatives && scan.generic_alternatives.length > 0) {
+        scan.generic_alternatives.forEach(alt => {
+          const badge = document.createElement('span');
+          badge.className = 'alt-badge';
+          badge.textContent = alt;
+          hGenericsEl.appendChild(badge);
+        });
+      } else {
+        hGenericsEl.innerHTML = '<span style="font-size:0.85rem;color:#94a3b8;font-style:italic;">No generic data available.</span>';
+      }
+
+      // Food interactions
+      const hFoodEl = document.getElementById('h-food');
+      hFoodEl.innerHTML = '';
+      if (scan.food_interactions && scan.food_interactions.length > 0) {
+        scan.food_interactions.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'food-item';
+          div.innerHTML = `<span class="food-item-icon">⚠️</span><span>${item}</span>`;
+          hFoodEl.appendChild(div);
+        });
+      } else {
+        hFoodEl.innerHTML = '<span style="font-size:0.85rem;color:#94a3b8;font-style:italic;">No food interaction data available.</span>';
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.getElementById('history-back-btn').addEventListener('click', () => {
+      document.getElementById('history-list-view').style.display = 'block';
+      document.getElementById('history-detail').style.display = 'none';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    /* ════════════════════════════════════════
+       Drug Checker
+    ════════════════════════════════════════ */
+    async function populateCheckerDropdowns() {
+      try {
+        const res   = await fetch(`/api/history${historyQueryParam()}`);
+        const scans = await res.json();
+        const top10 = scans.slice(0, 10);
+
+        [document.getElementById('med1-select'), document.getElementById('med2-select')].forEach(sel => {
+          sel.innerHTML = '<option value="">Quick add from Cabinet…</option>';
+          top10.forEach(scan => {
+            if (!scan.medicine_name) return;
+            const opt = document.createElement('option');
+            opt.value = scan.medicine_name;
+            opt.textContent = scan.medicine_name;
+            sel.appendChild(opt);
+          });
+        });
+      } catch (_) {
+        // dropdown stays with just the placeholder if history fails
+      }
+    }
+
+    document.getElementById('med1-select').addEventListener('change', function () {
+      if (this.value) { document.getElementById('med1-input').value = this.value; this.value = ''; }
+    });
+    document.getElementById('med2-select').addEventListener('change', function () {
+      if (this.value) { document.getElementById('med2-input').value = this.value; this.value = ''; }
+    });
+
+    document.getElementById('check-btn').addEventListener('click', async () => {
+      const medicine1 = document.getElementById('med1-input').value.trim();
+      const medicine2 = document.getElementById('med2-input').value.trim();
+
+      if (!medicine1 || !medicine2) {
+        alert('Please enter both medicine names.');
+        return;
+      }
+
+      const checkBtn       = document.getElementById('check-btn');
+      const checkerLoading = document.getElementById('checker-loading');
+      const checkerResults = document.getElementById('checker-results');
+
+      checkBtn.disabled        = true;
+      checkerLoading.style.display = 'block';
+      checkerResults.style.display = 'none';
+
+      try {
+        const response = await fetch('/api/interactions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ medicine1, medicine2 }),
+        });
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || `Server error ${response.status}`);
+
+        const severity = (data.severity || 'none').toLowerCase();
+        const banner   = document.getElementById('severity-banner');
+        banner.className = `severity-banner ${severity}`;
+        document.getElementById('severity-badge').textContent   = severity.toUpperCase();
+        document.getElementById('severity-summary').textContent = data.summary || '';
+
+        const effectsEl = document.getElementById('checker-effects');
+        effectsEl.innerHTML = '';
+        if (data.effects && data.effects.length > 0) {
+          data.effects.forEach(eff => {
+            const div = document.createElement('div');
+            div.className = 'effect-item';
+            div.innerHTML = `<span class="effect-dot"></span><span>${eff}</span>`;
+            effectsEl.appendChild(div);
+          });
+        } else {
+          effectsEl.innerHTML = '<span style="font-size:0.85rem;color:#94a3b8;font-style:italic;">No specific effects listed.</span>';
+        }
+
+        document.getElementById('checker-recommendation').textContent = data.recommendation || '';
+
+        checkerLoading.style.display = 'none';
+        checkerResults.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      } catch (err) {
+        checkerLoading.style.display = 'none';
+        alert(err.message || 'Failed to check interactions. Please try again.');
+      } finally {
+        checkBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
