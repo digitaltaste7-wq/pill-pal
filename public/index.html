@@ -767,6 +767,168 @@
       .scan-card { padding: 16px; }
       .app-footer { flex-direction: column; align-items: flex-start; }
     }
+
+    /* ── Data source badge ── */
+    .data-source-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+      margin-top: 4px;
+    }
+    .data-source-badge.fda { background: #dbeafe; color: #1e40af; }
+    .data-source-badge.ai  { background: #fed7aa; color: #c2410c; }
+
+    /* ── Expiry date badge ── */
+    .expiry-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-left: 6px;
+    }
+    .expiry-badge.safe    { background: #dcfce7; color: #166534; }
+    .expiry-badge.warning { background: #fef9c3; color: #854d0e; }
+    .expiry-badge.danger  { background: #fee2e2; color: #991b1b; }
+
+    /* ── History toolbar ── */
+    .history-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      gap: 10px;
+    }
+    .history-toolbar-title { font-size: 0.85rem; font-weight: 600; color: #64748b; }
+    .expiry-alerts-btn {
+      padding: 7px 13px;
+      background: #fff7ed;
+      color: #c2410c;
+      border: 1px solid #fed7aa;
+      border-radius: 9px;
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+      white-space: nowrap;
+    }
+    .expiry-alerts-btn:hover { background: #ffedd5; }
+
+    /* ── Expiry modal items ── */
+    .expiry-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      gap: 12px;
+    }
+    .expiry-item.danger  { border-color: #fecaca; background: #fff5f5; }
+    .expiry-item.warning { border-color: #fde68a; background: #fffbeb; }
+    .expiry-item-info { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+    .expiry-item-name { font-weight: 600; font-size: 0.875rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .expiry-item-date { font-size: 0.75rem; color: #64748b; }
+    .expiry-days-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .expiry-days-badge.expired { background: #fee2e2; color: #991b1b; }
+    .expiry-days-badge.danger  { background: #fee2e2; color: #991b1b; }
+    .expiry-days-badge.warning { background: #fef9c3; color: #854d0e; }
+
+    /* ── Dashboard ── */
+    #dashboard-panel { display: none; }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 4px;
+    }
+    .stat-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 20px 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06);
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #1e293b;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-icon { font-size: 1.4rem; margin-bottom: 6px; }
+    .stat-label { font-size: 0.72rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+    .stat-card.blue .stat-number  { color: #2563eb; }
+    .stat-card.orange .stat-number { color: #ea580c; }
+
+    .dash-section { background: #fff; border-radius: 14px; padding: 20px 22px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+    .dash-section-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #94a3b8;
+      margin-bottom: 14px;
+    }
+
+    .profile-usage-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .profile-usage-row:last-child { border-bottom: none; }
+    .profile-usage-name { font-weight: 600; font-size: 0.875rem; color: #1e293b; min-width: 80px; }
+    .profile-usage-bar-wrap { flex: 1; height: 6px; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
+    .profile-usage-bar { height: 100%; background: #2563eb; border-radius: 999px; transition: width .4s; }
+    .profile-usage-count { font-size: 0.75rem; color: #64748b; min-width: 30px; text-align: right; }
+
+    .cond-risk-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+    .cond-risk-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 14px;
+      background: #f8fafc;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      gap: 4px;
+      flex: 1;
+      min-width: 80px;
+    }
+    .cond-risk-item.has-flags { border-color: #fecaca; background: #fff5f5; }
+    .cond-risk-count { font-size: 1.4rem; font-weight: 700; color: #64748b; }
+    .cond-risk-item.has-flags .cond-risk-count { color: #ef4444; }
+    .cond-risk-label { font-size: 0.68rem; color: #64748b; font-weight: 500; text-align: center; }
+
+    .activity-list { display: flex; flex-direction: column; gap: 10px; }
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: #f8fafc;
+      border-radius: 10px;
+    }
+    .activity-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .activity-info { flex: 1; min-width: 0; }
+    .activity-name { font-weight: 600; font-size: 0.875rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .activity-meta { font-size: 0.75rem; color: #94a3b8; margin-top: 2px; }
   </style>
 </head>
 <body>
@@ -795,6 +957,9 @@
       </button>
       <button class="tab-btn" id="tab-cabinet" role="tab" aria-selected="false">
         🗄️ Medicine Cabinet
+      </button>
+      <button class="tab-btn" id="tab-dashboard" role="tab" aria-selected="false">
+        📊 Dashboard
       </button>
       <button class="tab-btn" id="tab-checker" role="tab" aria-selected="false">
         💊⚡ Drug Checker
@@ -899,6 +1064,10 @@
               <span class="info-label">Dosage</span>
               <span class="info-value" id="res-dosage">—</span>
             </div>
+            <div class="info-row" id="res-expiry-row" style="display:none;">
+              <span class="info-label">Expiry</span>
+              <span class="info-value" id="res-expiry">—</span>
+            </div>
             <div class="info-row">
               <span class="info-label">Usage</span>
               <span class="info-value" id="res-usage">—</span>
@@ -906,6 +1075,8 @@
           </div>
 
           <div class="divider"></div>
+
+          <div id="res-data-source-wrap"></div>
 
           <div class="section-block">
             <div class="section-label">Side Effects</div>
@@ -952,6 +1123,10 @@
 
       <!-- List view -->
       <div id="history-list-view">
+        <div class="history-toolbar">
+          <span class="history-toolbar-title">Recent Scans</span>
+          <button class="expiry-alerts-btn" id="expiry-alerts-btn">⚠️ Expiry Alerts</button>
+        </div>
         <div id="history-list" style="display:flex;flex-direction:column;gap:14px;"></div>
       </div>
 
@@ -1008,6 +1183,53 @@
       </div>
 
     </div><!-- /history-panel -->
+
+    <!-- ══ DASHBOARD TAB ══ -->
+    <div id="dashboard-panel">
+
+      <!-- Summary stat cards -->
+      <div class="dashboard-grid">
+        <div class="stat-card blue">
+          <div class="stat-icon">💊</div>
+          <div class="stat-number" id="dash-total">—</div>
+          <div class="stat-label">Total Scanned</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">👨‍👩‍👧</div>
+          <div class="stat-number" id="dash-members">—</div>
+          <div class="stat-label">Family Members</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-icon">⏰</div>
+          <div class="stat-number" id="dash-expiring">—</div>
+          <div class="stat-label">Expiring Soon</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-number" id="dash-top-medicine" style="font-size:0.9rem;word-break:break-word;">—</div>
+          <div class="stat-label">Most Scanned</div>
+        </div>
+      </div>
+
+      <!-- Medicine Cabinet by Profile -->
+      <div class="dash-section">
+        <div class="dash-section-title">Medicine Cabinet by Profile</div>
+        <div id="dash-profile-usage"></div>
+      </div>
+
+      <!-- Condition Risk Overview -->
+      <div class="dash-section">
+        <div class="dash-section-title">Condition Risk Overview</div>
+        <div class="cond-risk-grid" id="dash-cond-risks"></div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="dash-section">
+        <div class="dash-section-title">Recent Activity</div>
+        <div class="activity-list" id="dash-activity"></div>
+      </div>
+
+    </div><!-- /dashboard-panel -->
 
     <!-- ══ DRUG CHECKER TAB ══ -->
     <div id="checker-panel">
@@ -1080,6 +1302,18 @@
 
   </main>
 
+  <!-- ══ EXPIRY MODAL ══ -->
+  <div id="expiry-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>⚠️ Expiry Alerts</h2>
+        <button class="modal-close" id="expiry-modal-close">✕</button>
+      </div>
+      <p style="font-size:0.82rem;color:#64748b;">Medicines expiring within the next 60 days.</p>
+      <div id="expiry-modal-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+  </div>
+
   <!-- ══ PROFILE MODAL ══ -->
   <div id="profile-modal" class="modal-overlay hidden">
     <div class="modal-box">
@@ -1145,19 +1379,21 @@
     const resultsEl     = document.getElementById('results');
     const errorBox      = document.getElementById('error-box');
     const errorMsg      = document.getElementById('error-msg');
-    const scanPanel     = document.getElementById('scan-panel');
-    const historyPanel  = document.getElementById('history-panel');
-    const checkerPanel  = document.getElementById('checker-panel');
-    const tabScan       = document.getElementById('tab-scan');
-    const tabCabinet    = document.getElementById('tab-cabinet');
-    const tabChecker    = document.getElementById('tab-checker');
+    const scanPanel       = document.getElementById('scan-panel');
+    const historyPanel    = document.getElementById('history-panel');
+    const checkerPanel    = document.getElementById('checker-panel');
+    const dashboardPanel  = document.getElementById('dashboard-panel');
+    const tabScan         = document.getElementById('tab-scan');
+    const tabCabinet      = document.getElementById('tab-cabinet');
+    const tabChecker      = document.getElementById('tab-checker');
+    const tabDashboard    = document.getElementById('tab-dashboard');
 
     /* ════════════════════════════════════════
        Tabs
     ════════════════════════════════════════ */
     function setActiveTab(active) {
-      [tabScan, tabCabinet, tabChecker].forEach(t => t.classList.remove('active'));
-      [scanPanel, historyPanel, checkerPanel].forEach(p => { p.style.display = 'none'; });
+      [tabScan, tabCabinet, tabChecker, tabDashboard].forEach(t => t.classList.remove('active'));
+      [scanPanel, historyPanel, checkerPanel, dashboardPanel].forEach(p => { p.style.display = 'none'; });
       active.classList.add('active');
     }
 
@@ -1172,6 +1408,14 @@
       setActiveTab(tabCabinet);
       historyPanel.style.display = 'block';
       loadHistory();
+    });
+
+    tabDashboard.addEventListener('click', () => {
+      setActiveTab(tabDashboard);
+      dashboardPanel.style.display = 'flex';
+      dashboardPanel.style.flexDirection = 'column';
+      dashboardPanel.style.gap = '14px';
+      loadDashboard();
     });
 
     tabChecker.addEventListener('click', () => {
@@ -1389,6 +1633,17 @@
       });
     }
 
+    function getExpiryClass(expiryDate) {
+      const match = (expiryDate || '').match(/(\d{1,2})\/(\d{4})/);
+      if (!match) return 'safe';
+      const expiry = new Date(parseInt(match[2], 10), parseInt(match[1], 10), 0);
+      const daysLeft = Math.ceil((expiry - new Date()) / (24 * 60 * 60 * 1000));
+      if (daysLeft < 0)  return 'danger';
+      if (daysLeft <= 30) return 'danger';
+      if (daysLeft <= 60) return 'warning';
+      return 'safe';
+    }
+
     /* ════════════════════════════════════════
        Analyze
     ════════════════════════════════════════ */
@@ -1420,8 +1675,28 @@
         document.getElementById('res-dosage').textContent       = data.dosage       || '—';
         document.getElementById('res-usage').textContent        = data.usage        || '—';
 
-        setText('res-adverse',  data.adverse_reactions, 'No adverse reaction data from FDA.');
-        setText('res-warnings', data.warnings,          'No warning data from FDA.');
+        // Expiry date row
+        const expiryRow = document.getElementById('res-expiry-row');
+        const expiryEl  = document.getElementById('res-expiry');
+        if (data.expiry_date && data.expiry_date.trim()) {
+          expiryRow.style.display = 'flex';
+          const expiryClass = getExpiryClass(data.expiry_date);
+          expiryEl.innerHTML = `${data.expiry_date}<span class="expiry-badge ${expiryClass}">${expiryClass === 'danger' ? 'Expiring!' : expiryClass === 'warning' ? 'Soon' : 'OK'}</span>`;
+        } else {
+          expiryRow.style.display = 'none';
+          expiryEl.textContent = '—';
+        }
+
+        // Data source badge
+        const dsBadgeWrap = document.getElementById('res-data-source-wrap');
+        if (data.data_source === 'fda') {
+          dsBadgeWrap.innerHTML = `<span class="data-source-badge fda">🔵 FDA Data</span>`;
+        } else {
+          dsBadgeWrap.innerHTML = `<span class="data-source-badge ai">🟠 AI-sourced Data</span>`;
+        }
+
+        setText('res-adverse',  data.adverse_reactions, 'No adverse reaction data available.');
+        setText('res-warnings', data.warnings,          'No warning data available.');
 
         // Generic alternatives
         const genericsEl = document.getElementById('res-generics');
@@ -1719,6 +1994,144 @@
         checkBtn.disabled = false;
       }
     });
+
+    /* ════════════════════════════════════════
+       Expiry Alerts Modal
+    ════════════════════════════════════════ */
+    function openExpiryModal() {
+      document.getElementById('expiry-modal').classList.remove('hidden');
+      loadExpiryAlerts();
+    }
+    function closeExpiryModal() {
+      document.getElementById('expiry-modal').classList.add('hidden');
+    }
+
+    document.getElementById('expiry-alerts-btn').addEventListener('click', openExpiryModal);
+    document.getElementById('expiry-modal-close').addEventListener('click', closeExpiryModal);
+    document.getElementById('expiry-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeExpiryModal();
+    });
+
+    async function loadExpiryAlerts() {
+      const listEl = document.getElementById('expiry-modal-list');
+      listEl.innerHTML = '<p style="color:#94a3b8;font-size:0.85rem;">Loading…</p>';
+      try {
+        const res    = await fetch('/api/expiry-alerts');
+        const alerts = await res.json();
+        listEl.innerHTML = '';
+        if (!alerts.length) {
+          listEl.innerHTML = '<p style="color:#94a3b8;font-size:0.875rem;text-align:center;padding:16px 0;">No medicines expiring within 60 days.</p>';
+          return;
+        }
+        alerts.forEach(alert => {
+          const cls = alert.expired ? 'expired' : alert.days_left <= 30 ? 'danger' : 'warning';
+          const daysText = alert.expired ? 'Expired' : `${alert.days_left}d left`;
+          const item = document.createElement('div');
+          item.className = `expiry-item ${cls === 'expired' || cls === 'danger' ? 'danger' : 'warning'}`;
+          item.innerHTML = `
+            <div class="expiry-item-info">
+              <div class="expiry-item-name">${alert.medicine_name || 'Unknown'}</div>
+              <div class="expiry-item-date">Expires: ${alert.expiry_date}</div>
+            </div>
+            <span class="expiry-days-badge ${cls}">${daysText}</span>`;
+          listEl.appendChild(item);
+        });
+      } catch (_) {
+        listEl.innerHTML = '<p style="color:#ef4444;font-size:0.875rem;">Failed to load alerts.</p>';
+      }
+    }
+
+    /* ════════════════════════════════════════
+       Dashboard
+    ════════════════════════════════════════ */
+    async function loadDashboard() {
+      const COND_LABELS = { high_bp: 'High BP', low_bp: 'Low BP', diabetes: 'Diabetes', thyroid: 'Thyroid', kidney: 'Kidney' };
+
+      try {
+        const [histRes, profRes, expiryRes] = await Promise.all([
+          fetch('/api/history'),
+          fetch('/api/profiles'),
+          fetch('/api/expiry-alerts'),
+        ]);
+        const allScans  = await histRes.json();
+        const profiles  = await profRes.json();
+        const expiring  = await expiryRes.json();
+
+        // ── Stat cards ──
+        document.getElementById('dash-total').textContent    = allScans.length;
+        document.getElementById('dash-members').textContent  = profiles.length + 1; // +1 for Myself
+        document.getElementById('dash-expiring').textContent = expiring.length;
+
+        // Most scanned medicine
+        const nameCounts = {};
+        allScans.forEach(s => { if (s.medicine_name) nameCounts[s.medicine_name] = (nameCounts[s.medicine_name] || 0) + 1; });
+        const topMed = Object.entries(nameCounts).sort((a, b) => b[1] - a[1])[0];
+        document.getElementById('dash-top-medicine').textContent = topMed ? topMed[0] : '—';
+
+        // ── Profile usage ──
+        const profileUsageEl = document.getElementById('dash-profile-usage');
+        const profileMap = { null: { name: 'Myself', count: 0 } };
+        profiles.forEach(p => { profileMap[p.id] = { name: p.name, count: 0 }; });
+        allScans.forEach(s => {
+          const key = s.profile_id == null ? 'null' : String(s.profile_id);
+          if (profileMap[key]) profileMap[key].count++;
+        });
+        const maxCount = Math.max(...Object.values(profileMap).map(p => p.count), 1);
+        profileUsageEl.innerHTML = '';
+        Object.values(profileMap).forEach(p => {
+          const pct = Math.round((p.count / maxCount) * 100);
+          const row = document.createElement('div');
+          row.className = 'profile-usage-row';
+          row.innerHTML = `
+            <span class="profile-usage-name">${p.name}</span>
+            <div class="profile-usage-bar-wrap"><div class="profile-usage-bar" style="width:${pct}%"></div></div>
+            <span class="profile-usage-count">${p.count}</span>`;
+          profileUsageEl.appendChild(row);
+        });
+
+        // ── Condition risk ──
+        const condRiskEl = document.getElementById('dash-cond-risks');
+        condRiskEl.innerHTML = '';
+        const condKeys = ['high_bp', 'low_bp', 'diabetes', 'thyroid', 'kidney'];
+        const condCounts = {};
+        condKeys.forEach(k => { condCounts[k] = 0; });
+        allScans.forEach(s => {
+          (s.condition_flags || []).forEach(f => {
+            if (f.flagged && condCounts[f.condition] !== undefined) condCounts[f.condition]++;
+          });
+        });
+        condKeys.forEach(k => {
+          const item = document.createElement('div');
+          item.className = `cond-risk-item ${condCounts[k] > 0 ? 'has-flags' : ''}`;
+          item.innerHTML = `<span class="cond-risk-count">${condCounts[k]}</span><span class="cond-risk-label">${COND_LABELS[k]}</span>`;
+          condRiskEl.appendChild(item);
+        });
+
+        // ── Recent activity (last 5) ──
+        const activityEl = document.getElementById('dash-activity');
+        activityEl.innerHTML = '';
+        const recent = allScans.slice(0, 5);
+        if (!recent.length) {
+          activityEl.innerHTML = '<p style="color:#94a3b8;font-size:0.875rem;">No scans yet.</p>';
+        } else {
+          recent.forEach(s => {
+            const profileName = s.profile_id == null ? 'Myself' : (profileMap[String(s.profile_id)] || {}).name || 'Unknown';
+            const item = document.createElement('div');
+            item.className = 'activity-item';
+            item.innerHTML = `
+              <span class="activity-icon">💊</span>
+              <div class="activity-info">
+                <div class="activity-name">${s.medicine_name || 'Unknown Medicine'}</div>
+                <div class="activity-meta">${profileName} · ${formatDate(s.scanned_at)}</div>
+              </div>`;
+            activityEl.appendChild(item);
+          });
+        }
+
+      } catch (err) {
+        console.error('Dashboard load error:', err.message);
+      }
+    }
   </script>
 
   <footer class="app-footer">

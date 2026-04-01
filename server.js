@@ -29,6 +29,7 @@ db.exec(`
 try { db.exec(`ALTER TABLE scans ADD COLUMN generic_alternatives TEXT DEFAULT '[]'`); } catch (_) {}
 try { db.exec(`ALTER TABLE scans ADD COLUMN food_interactions TEXT DEFAULT '[]'`); } catch (_) {}
 try { db.exec(`ALTER TABLE scans ADD COLUMN profile_id INTEGER`); } catch (_) {}
+try { db.exec(`ALTER TABLE scans ADD COLUMN expiry_date TEXT DEFAULT ''`); } catch (_) {}
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS profiles (
@@ -40,8 +41,9 @@ db.exec(`
   )
 `);
 
-const insertScan           = db.prepare(`INSERT INTO scans (medicine_name, manufacturer, dosage, usage, conditions, condition_flags, generic_alternatives, food_interactions, profile_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+const insertScan           = db.prepare(`INSERT INTO scans (medicine_name, manufacturer, dosage, usage, conditions, condition_flags, generic_alternatives, food_interactions, profile_id, expiry_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
 const selectAllScans       = db.prepare(`SELECT * FROM scans ORDER BY scanned_at DESC LIMIT 20`);
+const selectScansWithExpiry = db.prepare(`SELECT * FROM scans WHERE expiry_date IS NOT NULL AND expiry_date != '' ORDER BY scanned_at DESC`);
 const selectScansByProfile = db.prepare(`SELECT * FROM scans WHERE profile_id = ? ORDER BY scanned_at DESC LIMIT 20`);
 const selectNullScans      = db.prepare(`SELECT * FROM scans WHERE profile_id IS NULL ORDER BY scanned_at DESC LIMIT 20`);
 const deleteScan           = db.prepare(`DELETE FROM scans WHERE id = ?`);
@@ -158,7 +160,7 @@ app.post('/api/analyze', authenticateAPIKey, upload.single('medicine'), async (r
       {
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1024,
-        system: 'You are Pill Pal, a medicine identification assistant. When given a medicine image, extract: medicine name, manufacturer, dosage, usage/purpose. Return ONLY a JSON object with fields: name, manufacturer, dosage, usage, confidence. No markdown, no explanation.',
+        system: 'You are Pill Pal, a medicine identification assistant. When given a medicine image, extract: medicine name, manufacturer, dosage, usage/purpose, and expiry date. Return ONLY a JSON object with fields: name, manufacturer, dosage, usage, confidence, expiry_date (format MM/YYYY or text exactly as printed on pack, empty string if not visible). No markdown, no explanation.',
         messages: [
           {
             role: 'user',
@@ -202,6 +204,7 @@ app.post('/api/analyze', authenticateAPIKey, upload.single('medicine'), async (r
     let adverse_reactions = '';
     let contraindications = '';
     let drug_interactions = '';
+    let data_source = 'ai';
 
     try {
       const fdaUrl = `https://api.fda.gov/drug/label.json?search=openfda.brand_name:"${encodeURIComponent(medicineData.name)}"&limit=1`;
@@ -213,9 +216,45 @@ app.post('/api/analyze', authenticateAPIKey, upload.single('medicine'), async (r
         adverse_reactions = (label.adverse_reactions && label.adverse_reactions[0]) || '';
         contraindications = (label.contraindications && label.contraindications[0]) || '';
         drug_interactions = (label.drug_interactions && label.drug_interactions[0]) || '';
+        if (warnings || adverse_reactions || contraindications || drug_interactions) {
+          data_source = 'fda';
+        }
       }
     } catch (fdaError) {
       // OpenFDA returned no results or errored — continue with empty strings
+    }
+
+    // ── Indian medicine fallback: if FDA had no data, ask Claude as pharmacist ──
+    if (data_source !== 'fda') {
+      try {
+        const indiaPrompt = `You are a pharmacist with expertise in Indian and global medicines. For the medicine: ${medicineData.name} with dosage: ${medicineData.dosage || 'unknown'}, provide safety information a patient should know. Return ONLY a JSON object with exactly these 4 fields as plain text strings: warnings, adverse_reactions, contraindications, drug_interactions. No markdown, no explanation.`;
+
+        const indiaResponse = await axios.post(
+          'https://api.anthropic.com/v1/messages',
+          {
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1024,
+            messages: [{ role: 'user', content: indiaPrompt }],
+          },
+          {
+            headers: {
+              'x-api-key': process.env.ANTHROPIC_API_KEY,
+              'anthropic-version': '2023-06-01',
+              'content-type': 'application/json',
+            },
+          }
+        );
+
+        let indiaRaw = indiaResponse.data.content[0].text;
+        indiaRaw = indiaRaw.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const indiaData = JSON.parse(indiaRaw);
+        warnings          = indiaData.warnings          || '';
+        adverse_reactions = indiaData.adverse_reactions || '';
+        contraindications = indiaData.contraindications || '';
+        drug_interactions = indiaData.drug_interactions || '';
+      } catch (indiaErr) {
+        console.error('India fallback Claude call failed:', indiaErr.message);
+      }
     }
 
     // ── Second Claude call: generics + food interactions ──
@@ -283,7 +322,8 @@ No markdown, no explanation, only the JSON object.`;
         JSON.stringify(condition_flags),
         JSON.stringify(generic_alternatives),
         JSON.stringify(food_interactions),
-        profile_id
+        profile_id,
+        medicineData.expiry_date  || ''
       );
     } catch (dbErr) {
       console.error('DB insert error:', dbErr.message);
@@ -295,6 +335,8 @@ No markdown, no explanation, only the JSON object.`;
       dosage:           medicineData.dosage        || '',
       usage:            medicineData.usage         || '',
       confidence:       medicineData.confidence    || '',
+      expiry_date:      medicineData.expiry_date   || '',
+      data_source,
       warnings,
       adverse_reactions,
       contraindications,
@@ -462,6 +504,40 @@ app.get('/admin/usage', requireAdminSecret, (req, res) => {
   } catch (err) {
     console.error('Error in GET /admin/usage:', err.message);
     return res.status(500).json({ error: 'Failed to fetch usage log', details: err.message });
+  }
+});
+
+app.get('/api/expiry-alerts', (req, res) => {
+  try {
+    const scans = selectScansWithExpiry.all();
+    const now = new Date();
+
+    const alerts = scans
+      .map(scan => {
+        const match = (scan.expiry_date || '').match(/(\d{1,2})\/(\d{4})/);
+        if (!match) return null;
+        const month = parseInt(match[1], 10);
+        const year  = parseInt(match[2], 10);
+        // Last day of the expiry month
+        const expiryDate = new Date(year, month, 0);
+        const daysLeft = Math.ceil((expiryDate - now) / (24 * 60 * 60 * 1000));
+        if (daysLeft > 60) return null;
+        return {
+          id:            scan.id,
+          medicine_name: scan.medicine_name,
+          expiry_date:   scan.expiry_date,
+          scanned_at:    scan.scanned_at,
+          days_left:     daysLeft,
+          expired:       daysLeft < 0,
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.days_left - b.days_left);
+
+    return res.json(alerts);
+  } catch (err) {
+    console.error('Error in /api/expiry-alerts:', err.message);
+    return res.status(500).json({ error: 'Failed to fetch expiry alerts' });
   }
 });
 
