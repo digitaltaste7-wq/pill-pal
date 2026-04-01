@@ -115,9 +115,10 @@ app.use(express.json());
 // ── Middleware ──
 function authenticateAPIKey(req, res, next) {
   const key = req.headers['x-api-key'];
-  if (!key) {
-    return res.status(401).json({ error: 'API key required', docs: '/api-docs' });
-  }
+  // No key = request from the browser frontend; allow through freely
+  if (!key) return next();
+
+  // Key present = B2B API call; validate it
   const client = findApiKey.get(key);
   if (!client) {
     return res.status(403).json({ error: 'Invalid or inactive API key' });
