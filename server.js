@@ -68,6 +68,20 @@ db.exec(`
 `);
 
 db.exec(`
+  CREATE TABLE IF NOT EXISTS reminders (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    profile_id     INTEGER,
+    medicine_name  TEXT,
+    dosage         TEXT,
+    frequency      TEXT,
+    times          TEXT,
+    notes          TEXT,
+    active         INTEGER DEFAULT 1,
+    created_at     DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+db.exec(`
   CREATE TABLE IF NOT EXISTS api_usage_log (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     api_key       TEXT,
@@ -76,6 +90,12 @@ db.exec(`
     timestamp     DATETIME DEFAULT CURRENT_TIMESTAMP
   )
 `);
+
+const insertReminder           = db.prepare(`INSERT INTO reminders (profile_id, medicine_name, dosage, frequency, times, notes) VALUES (?, ?, ?, ?, ?, ?)`);
+const selectRemindersByProfile = db.prepare(`SELECT * FROM reminders WHERE profile_id = ? AND active = 1 ORDER BY created_at DESC`);
+const selectRemindersNull      = db.prepare(`SELECT * FROM reminders WHERE profile_id IS NULL AND active = 1 ORDER BY created_at DESC`);
+const selectAllReminders       = db.prepare(`SELECT * FROM reminders WHERE active = 1 ORDER BY created_at DESC`);
+const deactivateReminder       = db.prepare(`UPDATE reminders SET active = 0 WHERE id = ?`);
 
 const findApiKey       = db.prepare(`SELECT * FROM api_keys WHERE api_key = ? AND active = 1`);
 const incrementUsage   = db.prepare(`UPDATE api_keys SET usage_count = usage_count + 1 WHERE api_key = ?`);
@@ -504,6 +524,166 @@ app.get('/admin/usage', requireAdminSecret, (req, res) => {
   } catch (err) {
     console.error('Error in GET /admin/usage:', err.message);
     return res.status(500).json({ error: 'Failed to fetch usage log', details: err.message });
+  }
+});
+
+// ── Reminder routes ──
+app.post('/api/reminders', (req, res) => {
+  try {
+    const { profile_id, medicine_name, dosage, frequency, times, notes } = req.body || {};
+    if (!medicine_name || !frequency || !times) {
+      return res.status(400).json({ error: 'medicine_name, frequency, and times are required' });
+    }
+    const pid = (profile_id && profile_id !== 'null') ? parseInt(profile_id, 10) : null;
+    const result = insertReminder.run(pid, medicine_name, dosage || '', frequency, JSON.stringify(times), notes || '');
+    return res.status(201).json({
+      id: Number(result.lastInsertRowid), profile_id: pid,
+      medicine_name, dosage: dosage || '', frequency, times, notes: notes || '',
+    });
+  } catch (err) {
+    console.error('Error in POST /api/reminders:', err.message);
+    return res.status(500).json({ error: 'Failed to create reminder', details: err.message });
+  }
+});
+
+app.get('/api/reminders', (req, res) => {
+  try {
+    const { profile_id } = req.query;
+    let rows;
+    if (profile_id === undefined) {
+      rows = selectAllReminders.all();
+    } else if (!profile_id || profile_id === 'null') {
+      rows = selectRemindersNull.all();
+    } else {
+      rows = selectRemindersByProfile.all(parseInt(profile_id, 10));
+    }
+    return res.json(rows.map(r => ({ ...r, times: JSON.parse(r.times || '[]') })));
+  } catch (err) {
+    console.error('Error in GET /api/reminders:', err.message);
+    return res.status(500).json({ error: 'Failed to fetch reminders', details: err.message });
+  }
+});
+
+app.delete('/api/reminders/:id', (req, res) => {
+  try {
+    deactivateReminder.run(req.params.id);
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('Error in DELETE /api/reminders/:id:', err.message);
+    return res.status(500).json({ error: 'Failed to delete reminder', details: err.message });
+  }
+});
+
+// ── Analyze by name (for prescription medicine cards) ──
+app.post('/api/analyze-by-name', authenticateAPIKey, async (req, res) => {
+  try {
+    const { medicine_name, conditions: condBody, profile_id: pidBody } = req.body || {};
+    if (!medicine_name) return res.status(400).json({ error: 'medicine_name is required' });
+
+    let warnings = '', adverse_reactions = '', contraindications = '', drug_interactions = '';
+    let data_source = 'ai';
+
+    try {
+      const fdaUrl = `https://api.fda.gov/drug/label.json?search=openfda.brand_name:"${encodeURIComponent(medicine_name)}"&limit=1`;
+      const fdaResponse = await axios.get(fdaUrl);
+      if (fdaResponse.data.results && fdaResponse.data.results.length > 0) {
+        const label = fdaResponse.data.results[0];
+        warnings          = (label.warnings          && label.warnings[0]) || '';
+        adverse_reactions = (label.adverse_reactions && label.adverse_reactions[0]) || '';
+        contraindications = (label.contraindications && label.contraindications[0]) || '';
+        drug_interactions = (label.drug_interactions && label.drug_interactions[0]) || '';
+        if (warnings || adverse_reactions || contraindications || drug_interactions) data_source = 'fda';
+      }
+    } catch (_) {}
+
+    if (data_source !== 'fda') {
+      try {
+        const indiaPrompt = `You are a pharmacist with expertise in Indian and global medicines. For the medicine: ${medicine_name}, provide safety information a patient should know. Return ONLY a JSON object with exactly these 4 fields as plain text strings: warnings, adverse_reactions, contraindications, drug_interactions. No markdown, no explanation.`;
+        const r = await axios.post('https://api.anthropic.com/v1/messages',
+          { model: 'claude-sonnet-4-20250514', max_tokens: 1024, messages: [{ role: 'user', content: indiaPrompt }] },
+          { headers: { 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' } }
+        );
+        const d = JSON.parse(r.data.content[0].text.replace(/```json/gi, '').replace(/```/g, '').trim());
+        warnings = d.warnings || ''; adverse_reactions = d.adverse_reactions || '';
+        contraindications = d.contraindications || ''; drug_interactions = d.drug_interactions || '';
+      } catch (_) {}
+    }
+
+    let generic_alternatives = [], food_interactions = [];
+    try {
+      const pharmPrompt = `You are a pharmacy assistant. Given this medicine: ${medicine_name}. Return ONLY a JSON object with exactly two fields: generic_alternatives (array of up to 3 strings, each a generic version with approximate price in INR), food_interactions (array of up to 5 strings, each a food/drink to avoid with reason). No markdown.`;
+      const r = await axios.post('https://api.anthropic.com/v1/messages',
+        { model: 'claude-sonnet-4-20250514', max_tokens: 1024, messages: [{ role: 'user', content: pharmPrompt }] },
+        { headers: { 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' } }
+      );
+      const d = JSON.parse(r.data.content[0].text.replace(/```json/gi, '').replace(/```/g, '').trim());
+      generic_alternatives = Array.isArray(d.generic_alternatives) ? d.generic_alternatives : [];
+      food_interactions    = Array.isArray(d.food_interactions)    ? d.food_interactions    : [];
+    } catch (_) {}
+
+    let conditions = [];
+    try { conditions = condBody ? JSON.parse(condBody) : []; } catch (_) {}
+    const condition_flags = checkConditionFlags({ warnings, adverse_reactions }, conditions);
+
+    let profile_id = null;
+    if (pidBody && pidBody !== 'null') profile_id = parseInt(pidBody, 10) || null;
+
+    try {
+      insertScan.run(medicine_name, '', '', '', JSON.stringify(conditions),
+        JSON.stringify(condition_flags), JSON.stringify(generic_alternatives),
+        JSON.stringify(food_interactions), profile_id, '');
+    } catch (_) {}
+
+    return res.json({
+      name: medicine_name, manufacturer: '', dosage: '', usage: '',
+      confidence: 'From prescription', expiry_date: '', data_source,
+      warnings, adverse_reactions, contraindications, drug_interactions,
+      condition_flags, generic_alternatives, food_interactions,
+      disclaimer: 'This is general medicine information only and not medical advice. Consult a doctor or pharmacist before making any health decisions.',
+    });
+  } catch (err) {
+    console.error('Error in /api/analyze-by-name:', err.message);
+    return res.status(500).json({ error: 'Failed to analyze medicine', details: err.message });
+  }
+});
+
+// ── Prescription scanner ──
+app.post('/api/scan-prescription', upload.single('prescription'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No prescription image uploaded' });
+
+    const base64Image = req.file.buffer.toString('base64');
+    const mimeType = req.file.mimetype;
+
+    const claudeResponse = await axios.post(
+      'https://api.anthropic.com/v1/messages',
+      {
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1024,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64Image } },
+            { type: 'text', text: 'You are a pharmacist. This is a doctor\'s prescription. Extract ALL medicine names listed. Return ONLY a JSON object with field: medicines (array of strings, each being a medicine name exactly as written). No markdown.' },
+          ],
+        }],
+      },
+      {
+        headers: {
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json',
+        },
+      }
+    );
+
+    let raw = claudeResponse.data.content[0].text;
+    raw = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
+    const parsed = JSON.parse(raw);
+    return res.json({ medicines: Array.isArray(parsed.medicines) ? parsed.medicines : [] });
+  } catch (err) {
+    console.error('Error in /api/scan-prescription:', err.message);
+    return res.status(500).json({ error: 'Failed to scan prescription', details: err.message });
   }
 });
 
