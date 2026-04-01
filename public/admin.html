@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pill Pal Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f1117;
+      --surface:   #1a1d27;
+      --surface2:  #22263a;
+      --border:    #2e3347;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --blue:      #3b82f6;
+      --blue-dark: #2563eb;
+      --green:     #10b981;
+      --red:       #ef4444;
+      --yellow:    #f59e0b;
+    }
+
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── Login ── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .login-logo { font-size: 1.8rem; font-weight: 700; color: var(--blue); text-align: center; }
+    .login-sub  { font-size: 0.85rem; color: var(--muted); text-align: center; }
+    .login-box label { font-size: 0.78rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+    .login-box input {
+      width: 100%; margin-top: 6px;
+      padding: 11px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .login-box input:focus { border-color: var(--blue); }
+    #login-error { font-size: 0.82rem; color: var(--red); display: none; }
+    .btn-primary {
+      padding: 12px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-primary:hover { background: var(--blue-dark); }
+
+    /* ── Dashboard ── */
+    #dashboard { display: none; }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-logo { font-size: 1.1rem; font-weight: 700; color: var(--blue); }
+    .header-sub  { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .btn-logout {
+      padding: 7px 16px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color .15s, color .15s;
+    }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+    main { max-width: 1200px; margin: 0 auto; padding: 32px 24px; display: flex; flex-direction: column; gap: 32px; }
+
+    /* ── Section card ── */
+    .section-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .section-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .section-title { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+    .section-subtitle { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .section-body { padding: 24px; }
+
+    /* ── Create key form ── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-field { display: flex; flex-direction: column; gap: 6px; }
+    .form-label { font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+    .form-input, .form-select {
+      padding: 10px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.875rem;
+      outline: none;
+    }
+    .form-input:focus, .form-select:focus { border-color: var(--blue); }
+    .form-select option { background: var(--surface2); }
+    .form-actions { margin-top: 20px; display: flex; align-items: center; gap: 16px; }
+
+    /* ── Generated key box ── */
+    #new-key-box {
+      display: none;
+      margin-top: 20px;
+      padding: 16px 20px;
+      background: #052e16;
+      border: 1px solid #166534;
+      border-radius: 10px;
+    }
+    .new-key-label { font-size: 0.72rem; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+    .new-key-row { display: flex; align-items: center; gap: 12px; }
+    .new-key-value {
+      flex: 1;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      color: #6ee7b7;
+      background: #021f0e;
+      border: 1px solid #166534;
+      border-radius: 7px;
+      padding: 10px 14px;
+      word-break: break-all;
+    }
+    .btn-copy {
+      padding: 9px 16px;
+      background: #166534;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .15s;
+    }
+    .btn-copy:hover { background: #15803d; }
+    .new-key-warn { font-size: 0.75rem; color: #86efac; margin-top: 10px; }
+
+    /* ── Tables ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th {
+      text-align: left;
+      padding: 10px 16px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface2); }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+    .badge-green  { background: #052e16; color: var(--green); border: 1px solid #166534; }
+    .badge-red    { background: #450a0a; color: var(--red);   border: 1px solid #991b1b; }
+    .badge-yellow { background: #451a03; color: var(--yellow);border: 1px solid #92400e; }
+    .badge-blue   { background: #172554; color: #93c5fd;      border: 1px solid #1e40af; }
+
+    .key-masked { font-family: 'Courier New', monospace; font-size: 0.8rem; color: var(--muted); }
+
+    .usage-bar-wrap { display: flex; align-items: center; gap: 10px; }
+    .usage-bar-bg { flex: 1; height: 6px; background: var(--surface2); border-radius: 999px; min-width: 80px; }
+    .usage-bar-fill { height: 100%; border-radius: 999px; background: var(--blue); transition: width .3s; }
+    .usage-bar-fill.warn  { background: var(--yellow); }
+    .usage-bar-fill.crit  { background: var(--red); }
+    .usage-text { font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+
+    .btn-deactivate {
+      padding: 5px 12px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--red);
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+    .btn-deactivate:hover { border-color: var(--red); background: #450a0a; }
+    .btn-deactivate:disabled { opacity: .4; cursor: not-allowed; }
+
+    .empty-row td { text-align: center; color: var(--muted); padding: 32px; }
+
+    .refresh-note { font-size: 0.72rem; color: var(--muted); }
+    #refresh-countdown { color: var(--blue); }
+  </style>
+</head>
+<body>
+
+  <!-- ══ LOGIN ══ -->
+  <div id="login-screen">
+    <div class="login-box">
+      <div class="login-logo">💊 Pill Pal</div>
+      <div class="login-sub">Admin Dashboard</div>
+      <div>
+        <label for="admin-password">Admin Password</label>
+        <input type="password" id="admin-password" placeholder="Enter admin password" autocomplete="current-password">
+      </div>
+      <div id="login-error">Incorrect password. Try again.</div>
+      <button class="btn-primary" id="login-btn">Sign In</button>
+    </div>
+  </div>
+
+  <!-- ══ DASHBOARD ══ -->
+  <div id="dashboard">
+    <header>
+      <div>
+        <div class="header-logo">💊 Pill Pal Admin</div>
+        <div class="header-sub">B2B API Management Dashboard</div>
+      </div>
+      <button class="btn-logout" id="logout-btn">Sign Out</button>
+    </header>
+
+    <main>
+
+      <!-- Create key -->
+      <div class="section-card">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Create New API Key</div>
+            <div class="section-subtitle">Generate a key for a new B2B client</div>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="form-grid">
+            <div class="form-field">
+              <label class="form-label">Client Name</label>
+              <input type="text" id="f-client-name" class="form-input" placeholder="e.g. MedCare Inc.">
+            </div>
+            <div class="form-field">
+              <label class="form-label">Email</label>
+              <input type="email" id="f-email" class="form-input" placeholder="billing@client.com">
+            </div>
+            <div class="form-field">
+              <label class="form-label">Plan</label>
+              <select id="f-plan" class="form-select">
+                <option value="starter">Starter — 500 calls/mo</option>
+                <option value="growth">Growth — 2,000 calls/mo</option>
+                <option value="enterprise">Enterprise — 10,000 calls/mo</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Monthly Limit</label>
+              <input type="number" id="f-limit" class="form-input" value="500">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-primary" id="generate-btn" style="padding:10px 24px;">Generate Key</button>
+            <span id="generate-status" style="font-size:0.82rem;color:var(--muted);"></span>
+          </div>
+          <div id="new-key-box">
+            <div class="new-key-label">⚡ API Key Generated — Save It Now</div>
+            <div class="new-key-row">
+              <div class="new-key-value" id="new-key-value"></div>
+              <button class="btn-copy" id="copy-key-btn">Copy</button>
+            </div>
+            <div class="new-key-warn">⚠️ This key will not be shown again in full. Store it securely before closing this box.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- API Keys table -->
+      <div class="section-card">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Active API Keys</div>
+            <div class="section-subtitle">All client keys and current usage</div>
+          </div>
+          <span class="refresh-note">Auto-refresh in <span id="refresh-countdown">30</span>s</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Email</th>
+                <th>Plan</th>
+                <th>Usage</th>
+                <th>Key</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="keys-tbody">
+              <tr class="empty-row"><td colspan="8">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Usage log table -->
+      <div class="section-card">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Recent API Usage</div>
+            <div class="section-subtitle">Last 100 requests across all clients</div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Client Key</th>
+                <th>Endpoint</th>
+                <th>Medicine Scanned</th>
+              </tr>
+            </thead>
+            <tbody id="usage-tbody">
+              <tr class="empty-row"><td colspan="4">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    const ADMIN_SECRET  = 'pill-pal-admin-2024';
+    const PLAN_LIMITS   = { starter: 500, growth: 2000, enterprise: 10000 };
+    const PLAN_LABELS   = { starter: 'Starter', growth: 'Growth', enterprise: 'Enterprise' };
+
+    /* ════════════════ Auth ════════════════ */
+    function isLoggedIn() { return sessionStorage.getItem('pp_admin') === '1'; }
+
+    function showDashboard() {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('dashboard').style.display    = 'block';
+      loadKeys();
+      loadUsage();
+      startCountdown();
+    }
+
+    if (isLoggedIn()) showDashboard();
+
+    document.getElementById('login-btn').addEventListener('click', () => {
+      const pw = document.getElementById('admin-password').value;
+      if (pw === ADMIN_SECRET) {
+        sessionStorage.setItem('pp_admin', '1');
+        document.getElementById('login-error').style.display = 'none';
+        showDashboard();
+      } else {
+        document.getElementById('login-error').style.display = 'block';
+      }
+    });
+    document.getElementById('admin-password').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('login-btn').click();
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      sessionStorage.removeItem('pp_admin');
+      location.reload();
+    });
+
+    /* ════════════════ Plan auto-fill ════════════════ */
+    document.getElementById('f-plan').addEventListener('change', function () {
+      document.getElementById('f-limit').value = PLAN_LIMITS[this.value] || 500;
+    });
+
+    /* ════════════════ Generate key ════════════════ */
+    document.getElementById('generate-btn').addEventListener('click', async () => {
+      const client_name   = document.getElementById('f-client-name').value.trim();
+      const email         = document.getElementById('f-email').value.trim();
+      const plan          = document.getElementById('f-plan').value;
+      const monthly_limit = parseInt(document.getElementById('f-limit').value, 10);
+      const statusEl      = document.getElementById('generate-status');
+
+      if (!client_name || !email) { statusEl.textContent = 'Client name and email are required.'; return; }
+
+      statusEl.textContent = 'Generating…';
+      document.getElementById('new-key-box').style.display = 'none';
+
+      try {
+        const res  = await fetch('/admin/keys', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-secret': ADMIN_SECRET },
+          body: JSON.stringify({ client_name, email, plan, monthly_limit }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed');
+
+        document.getElementById('new-key-value').textContent = data.api_key;
+        document.getElementById('new-key-box').style.display = 'block';
+        document.getElementById('f-client-name').value = '';
+        document.getElementById('f-email').value = '';
+        statusEl.textContent = '';
+        loadKeys();
+      } catch (err) {
+        statusEl.textContent = 'Error: ' + err.message;
+      }
+    });
+
+    document.getElementById('copy-key-btn').addEventListener('click', () => {
+      const key = document.getElementById('new-key-value').textContent;
+      navigator.clipboard.writeText(key).then(() => {
+        const btn = document.getElementById('copy-key-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+      });
+    });
+
+    /* ════════════════ Load keys ════════════════ */
+    async function loadKeys() {
+      try {
+        const res  = await fetch('/admin/keys', { headers: { 'x-admin-secret': ADMIN_SECRET } });
+        const keys = await res.json();
+        const tbody = document.getElementById('keys-tbody');
+
+        if (!keys.length) {
+          tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No API keys yet.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = '';
+        keys.forEach(k => {
+          const pct      = k.monthly_limit > 0 ? (k.usage_count / k.monthly_limit) * 100 : 0;
+          const barClass = pct >= 90 ? 'crit' : pct >= 70 ? 'warn' : '';
+          const masked   = k.api_key.slice(0, 12) + '****' + k.api_key.slice(-4);
+          const created  = new Date(k.created_at + 'Z').toLocaleDateString();
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td style="font-weight:600;">${k.client_name}</td>
+            <td style="color:var(--muted)">${k.email}</td>
+            <td><span class="badge badge-blue">${PLAN_LABELS[k.plan] || k.plan}</span></td>
+            <td>
+              <div class="usage-bar-wrap">
+                <div class="usage-bar-bg"><div class="usage-bar-fill ${barClass}" style="width:${Math.min(pct,100).toFixed(1)}%"></div></div>
+                <span class="usage-text">${k.usage_count}/${k.monthly_limit}</span>
+              </div>
+            </td>
+            <td><span class="key-masked">${masked}</span></td>
+            <td><span class="badge ${k.active ? 'badge-green' : 'badge-red'}">${k.active ? 'Active' : 'Inactive'}</span></td>
+            <td style="color:var(--muted);font-size:0.78rem;">${created}</td>
+            <td>
+              <button class="btn-deactivate" data-id="${k.id}" ${!k.active ? 'disabled' : ''}>
+                ${k.active ? 'Deactivate' : 'Inactive'}
+              </button>
+            </td>`;
+          tr.querySelector('.btn-deactivate')?.addEventListener('click', async function () {
+            if (!confirm(`Deactivate key for "${k.client_name}"?`)) return;
+            this.disabled = true;
+            await fetch(`/admin/keys/${k.id}`, { method: 'DELETE', headers: { 'x-admin-secret': ADMIN_SECRET } });
+            loadKeys();
+          });
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        document.getElementById('keys-tbody').innerHTML = `<tr class="empty-row"><td colspan="8" style="color:var(--red)">Failed to load keys.</td></tr>`;
+      }
+    }
+
+    /* ════════════════ Load usage ════════════════ */
+    async function loadUsage() {
+      try {
+        const res   = await fetch('/admin/usage', { headers: { 'x-admin-secret': ADMIN_SECRET } });
+        const rows  = await res.json();
+        const tbody = document.getElementById('usage-tbody');
+
+        if (!rows.length) {
+          tbody.innerHTML = '<tr class="empty-row"><td colspan="4">No usage recorded yet.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = '';
+        rows.forEach(r => {
+          const ts      = new Date(r.timestamp + 'Z').toLocaleString();
+          const masked  = r.api_key ? (r.api_key.slice(0, 12) + '****') : '—';
+          const endpoint = r.endpoint || '—';
+          const med      = r.medicine_name || '—';
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td style="color:var(--muted);font-size:0.78rem;white-space:nowrap;">${ts}</td>
+            <td><span class="key-masked">${masked}</span></td>
+            <td><span class="badge badge-blue">${endpoint}</span></td>
+            <td style="font-weight:500;">${med}</td>`;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        document.getElementById('usage-tbody').innerHTML = `<tr class="empty-row"><td colspan="4" style="color:var(--red)">Failed to load usage.</td></tr>`;
+      }
+    }
+
+    /* ════════════════ Auto-refresh countdown ════════════════ */
+    let countdown = 30;
+    function startCountdown() {
+      setInterval(() => {
+        countdown--;
+        document.getElementById('refresh-countdown').textContent = countdown;
+        if (countdown <= 0) {
+          countdown = 30;
+          loadKeys();
+          loadUsage();
+        }
+      }, 1000);
+    }
+  </script>
+</body>
+</html>

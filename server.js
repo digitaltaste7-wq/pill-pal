@@ -4,6 +4,7 @@ const multer = require('multer');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { DatabaseSync } = require('node:sqlite');
 
 const app = express();
@@ -50,6 +51,38 @@ const insertProfile      = db.prepare(`INSERT INTO profiles (name, relation, con
 const deleteProfile      = db.prepare(`DELETE FROM profiles WHERE id = ?`);
 const deleteProfileScans = db.prepare(`DELETE FROM scans WHERE profile_id = ?`);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS api_keys (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    client_name   TEXT,
+    email         TEXT,
+    api_key       TEXT UNIQUE,
+    plan          TEXT DEFAULT 'starter',
+    monthly_limit INTEGER DEFAULT 500,
+    usage_count   INTEGER DEFAULT 0,
+    active        INTEGER DEFAULT 1,
+    created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS api_usage_log (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    api_key       TEXT,
+    endpoint      TEXT,
+    medicine_name TEXT,
+    timestamp     DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+const findApiKey       = db.prepare(`SELECT * FROM api_keys WHERE api_key = ? AND active = 1`);
+const incrementUsage   = db.prepare(`UPDATE api_keys SET usage_count = usage_count + 1 WHERE api_key = ?`);
+const logUsage         = db.prepare(`INSERT INTO api_usage_log (api_key, endpoint, medicine_name) VALUES (?, ?, ?)`);
+const selectAllKeys    = db.prepare(`SELECT * FROM api_keys ORDER BY created_at DESC`);
+const insertApiKey     = db.prepare(`INSERT INTO api_keys (client_name, email, api_key, plan, monthly_limit) VALUES (?, ?, ?, ?, ?)`);
+const deactivateKey    = db.prepare(`UPDATE api_keys SET active = 0 WHERE id = ?`);
+const selectUsageLog   = db.prepare(`SELECT * FROM api_usage_log ORDER BY timestamp DESC LIMIT 100`);
+
 // ── Multer ──
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -79,12 +112,38 @@ function checkConditionFlags(openfdaData, conditions) {
 
 app.use(express.json());
 
+// ── Middleware ──
+function authenticateAPIKey(req, res, next) {
+  const key = req.headers['x-api-key'];
+  if (!key) {
+    return res.status(401).json({ error: 'API key required', docs: '/api-docs' });
+  }
+  const client = findApiKey.get(key);
+  if (!client) {
+    return res.status(403).json({ error: 'Invalid or inactive API key' });
+  }
+  if (client.usage_count >= client.monthly_limit) {
+    return res.status(429).json({ error: 'Monthly limit exceeded', limit: client.monthly_limit, used: client.usage_count });
+  }
+  req.apiClient = client;
+  incrementUsage.run(key);
+  logUsage.run(key, req.path, '');
+  next();
+}
+
+function requireAdminSecret(req, res, next) {
+  if (req.headers['x-admin-secret'] !== process.env.ADMIN_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
+}
+
 // ── Routes ──
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.post('/api/analyze', upload.single('medicine'), async (req, res) => {
+app.post('/api/analyze', authenticateAPIKey, upload.single('medicine'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No image uploaded' });
@@ -131,6 +190,12 @@ app.post('/api/analyze', upload.single('medicine'), async (req, res) => {
     let rawText = claudeResponse.data.content[0].text;
     rawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
     const medicineData = JSON.parse(rawText);
+
+    // Update usage log with resolved medicine name
+    if (req.apiClient) {
+      db.prepare(`UPDATE api_usage_log SET medicine_name = ? WHERE api_key = ? AND id = (SELECT MAX(id) FROM api_usage_log WHERE api_key = ?)`
+      ).run(medicineData.name || '', req.apiClient.api_key, req.apiClient.api_key);
+    }
 
     let warnings = '';
     let adverse_reactions = '';
@@ -314,7 +379,7 @@ app.delete('/api/history/:id', (req, res) => {
   }
 });
 
-app.post('/api/interactions', async (req, res) => {
+app.post('/api/interactions', authenticateAPIKey, async (req, res) => {
   try {
     const { medicine1, medicine2 } = req.body || {};
     if (!medicine1 || !medicine2) {
@@ -352,6 +417,50 @@ No markdown, no explanation, only JSON.`;
   } catch (err) {
     console.error('Error in /api/interactions:', err.message);
     return res.status(500).json({ error: 'Failed to check interactions', details: err.message });
+  }
+});
+
+// ── Admin routes ──
+app.post('/admin/keys', requireAdminSecret, (req, res) => {
+  try {
+    const { client_name, email, plan = 'starter', monthly_limit = 500 } = req.body || {};
+    if (!client_name || !email) {
+      return res.status(400).json({ error: 'client_name and email are required' });
+    }
+    const key = 'pp_live_' + crypto.randomBytes(12).toString('hex');
+    insertApiKey.run(client_name, email, key, plan, monthly_limit);
+    return res.status(201).json({ client_name, email, api_key: key, plan, monthly_limit });
+  } catch (err) {
+    console.error('Error in POST /admin/keys:', err.message);
+    return res.status(500).json({ error: 'Failed to create API key', details: err.message });
+  }
+});
+
+app.get('/admin/keys', requireAdminSecret, (req, res) => {
+  try {
+    return res.json(selectAllKeys.all());
+  } catch (err) {
+    console.error('Error in GET /admin/keys:', err.message);
+    return res.status(500).json({ error: 'Failed to fetch API keys', details: err.message });
+  }
+});
+
+app.delete('/admin/keys/:id', requireAdminSecret, (req, res) => {
+  try {
+    deactivateKey.run(req.params.id);
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('Error in DELETE /admin/keys/:id:', err.message);
+    return res.status(500).json({ error: 'Failed to deactivate key', details: err.message });
+  }
+});
+
+app.get('/admin/usage', requireAdminSecret, (req, res) => {
+  try {
+    return res.json(selectUsageLog.all());
+  } catch (err) {
+    console.error('Error in GET /admin/usage:', err.message);
+    return res.status(500).json({ error: 'Failed to fetch usage log', details: err.message });
   }
 });
 
