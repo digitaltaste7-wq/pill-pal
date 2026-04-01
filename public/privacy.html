@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy – Pill Pal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #ffffff;
+      --surface: #f8fafc;
+      --border:  #e2e8f0;
+      --text:    #0f172a;
+      --muted:   #64748b;
+      --blue:    #2563eb;
+      --blue-lt: #eff6ff;
+      --red-lt:  #fef2f2;
+      --red-bd:  #fecaca;
+      --red-txt: #991b1b;
+    }
+
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+    /* ── Layout ── */
+    .page { display: flex; min-height: 100vh; }
+
+    /* Sidebar */
+    nav.sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 32px 20px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .nav-logo { font-size: 1.1rem; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: block; text-decoration: none; }
+    .nav-back { font-size: 0.78rem; color: var(--muted); text-decoration: none; display: flex; align-items: center; gap: 4px; margin-bottom: 28px; }
+    .nav-back:hover { color: var(--blue); }
+    .nav-section { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 18px 0 8px; }
+    .nav-link {
+      display: block;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 500;
+      transition: background .15s, color .15s;
+      margin-bottom: 2px;
+      line-height: 1.4;
+    }
+    .nav-link:hover { background: var(--border); color: var(--text); }
+    .nav-link.active { background: var(--blue-lt); color: var(--blue); }
+
+    /* Content */
+    .content { flex: 1; max-width: 780px; padding: 60px 48px 80px; }
+
+    /* ── Header ── */
+    .doc-header { margin-bottom: 44px; padding-bottom: 28px; border-bottom: 1px solid var(--border); }
+    .doc-eyebrow { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--blue); margin-bottom: 10px; }
+    .doc-title { font-size: 2rem; font-weight: 700; color: var(--text); letter-spacing: -0.5px; margin-bottom: 8px; }
+    .doc-meta { font-size: 0.85rem; color: var(--muted); }
+
+    /* ── Sections ── */
+    .doc-section { margin-bottom: 52px; scroll-margin-top: 24px; }
+    h2 {
+      font-size: 1.2rem; font-weight: 700; color: var(--text);
+      margin-bottom: 14px; padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-icon { font-size: 1.1rem; }
+    h3 { font-size: 0.95rem; font-weight: 700; color: var(--text); margin: 20px 0 8px; }
+    p  { font-size: 0.9rem; color: var(--muted); margin-bottom: 12px; line-height: 1.75; }
+    a  { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    ul {
+      margin: 8px 0 14px 0;
+      padding-left: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    ul li {
+      font-size: 0.875rem;
+      color: var(--muted);
+      padding-left: 18px;
+      position: relative;
+      line-height: 1.65;
+    }
+    ul li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      color: var(--border);
+      font-weight: 700;
+    }
+    ul li strong { color: var(--text); font-weight: 600; }
+
+    /* ── Medical disclaimer box ── */
+    .disclaimer-box {
+      background: var(--red-lt);
+      border: 1px solid var(--red-bd);
+      border-left: 4px solid #ef4444;
+      border-radius: 10px;
+      padding: 20px 22px;
+      margin: 20px 0;
+    }
+    .disclaimer-box .disc-icon { font-size: 1.4rem; margin-bottom: 10px; display: block; }
+    .disclaimer-box p {
+      font-size: 0.9rem;
+      color: var(--red-txt);
+      font-weight: 500;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    /* ── Info callout ── */
+    .callout {
+      display: flex;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      line-height: 1.65;
+      margin: 14px 0;
+      color: #1e40af;
+      background: var(--blue-lt);
+      border: 1px solid #bfdbfe;
+    }
+    .callout-icon { flex-shrink: 0; font-size: 1rem; }
+
+    /* ── Third-party table ── */
+    .services-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 14px 0; }
+    .services-table th {
+      text-align: left; padding: 9px 14px;
+      background: var(--surface); border: 1px solid var(--border);
+      font-size: 0.7rem; text-transform: uppercase;
+      letter-spacing: .06em; color: var(--muted);
+    }
+    .services-table td { padding: 11px 14px; border: 1px solid var(--border); color: var(--muted); vertical-align: top; }
+    .services-table td:first-child { font-weight: 600; color: var(--text); white-space: nowrap; }
+    .services-table tr:hover td { background: var(--surface); }
+
+    /* ── Contact block ── */
+    .contact-block {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .contact-item-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .contact-item-label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 2px; }
+    .contact-item-value { font-size: 0.875rem; font-weight: 600; color: var(--blue); }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 60px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--blue); }
+
+    @media (max-width: 768px) {
+      nav.sidebar { display: none; }
+      .content { padding: 32px 20px 60px; }
+      .doc-title { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── Sidebar ── -->
+  <nav class="sidebar">
+    <a class="nav-logo" href="/">💊 Pill Pal</a>
+    <a class="nav-back" href="/">← Back to App</a>
+
+    <div class="nav-section">Privacy Policy</div>
+    <a class="nav-link" href="#introduction">Introduction</a>
+    <a class="nav-link" href="#information-collected">Information We Collect</a>
+    <a class="nav-link" href="#how-we-use">How We Use Your Data</a>
+    <a class="nav-link" href="#b2b-partners">B2B API Partners</a>
+    <a class="nav-link" href="#data-retention">Data Storage & Retention</a>
+    <a class="nav-link" href="#third-parties">Third Party Services</a>
+    <a class="nav-link" href="#childrens-privacy">Children's Privacy</a>
+    <a class="nav-link" href="#your-rights">Your Rights</a>
+    <a class="nav-link" href="#medical-disclaimer">Medical Disclaimer</a>
+    <a class="nav-link" href="#contact">Contact Us</a>
+  </nav>
+
+  <!-- ── Content ── -->
+  <div class="content">
+
+    <div class="doc-header">
+      <div class="doc-eyebrow">Legal</div>
+      <div class="doc-title">Privacy Policy</div>
+      <div class="doc-meta">Last updated: <strong>April 1, 2026</strong> &nbsp;·&nbsp; Effective immediately</div>
+    </div>
+
+    <!-- 1. Introduction -->
+    <div class="doc-section" id="introduction">
+      <h2><span class="section-icon">👋</span> Introduction</h2>
+      <p>Welcome to <strong>Pill Pal</strong> — an AI-powered medicine information tool designed to help users identify medicines, check drug interactions, and understand medication details using publicly available health data and artificial intelligence.</p>
+      <p>Pill Pal is <strong>not a medical device</strong> and is not intended to replace professional medical advice, diagnosis, or treatment. It is an informational tool only.</p>
+      <p>This Privacy Policy explains what information we collect when you use Pill Pal, how we use it, and your rights regarding that information. By using Pill Pal, you agree to the practices described in this policy.</p>
+      <div class="callout">
+        <span class="callout-icon">📬</span>
+        <div>This policy is operated by <strong>Pill Pal</strong>. For privacy-related questions, contact us at <a href="mailto:privacy@pillpal.app">privacy@pillpal.app</a>.</div>
+      </div>
+    </div>
+
+    <!-- 2. Information We Collect -->
+    <div class="doc-section" id="information-collected">
+      <h2><span class="section-icon">📋</span> Information We Collect</h2>
+      <p>We are committed to minimizing data collection. Here is exactly what Pill Pal collects:</p>
+
+      <h3>Medicine Images</h3>
+      <p>When you upload a photo of a medicine, that image is transmitted securely to our server for processing. Images are processed in real-time in memory and are <strong>never written to disk or stored permanently</strong> on our servers.</p>
+
+      <h3>Health Conditions</h3>
+      <p>If you optionally declare health conditions (e.g. High BP, Diabetes) to enable personalized interaction flags, those selections are stored <strong>locally in your browser only</strong> as part of your Family Profiles. They are not transmitted to our servers independently.</p>
+
+      <h3>Scan History</h3>
+      <p>The results of your medicine scans (medicine name, dosage, manufacturer, etc.) are stored in the application's local database to power the Medicine Cabinet feature. This history can be deleted by you at any time from within the app.</p>
+
+      <h3>What We Do NOT Collect</h3>
+      <ul>
+        <li>No account creation or login is required</li>
+        <li>No name, email address, or personal identity is collected from end users</li>
+        <li>No device identifiers or tracking cookies</li>
+        <li>No payment information</li>
+        <li>No location data</li>
+      </ul>
+    </div>
+
+    <!-- 3. How We Use Your Information -->
+    <div class="doc-section" id="how-we-use">
+      <h2><span class="section-icon">⚙️</span> How We Use Your Information</h2>
+
+      <h3>Medicine Image Processing</h3>
+      <p>Uploaded medicine images are sent to the <strong>Anthropic Claude API</strong> (a third-party AI service) solely for the purpose of identifying the medicine in the image. The image is not stored by us after processing is complete.</p>
+
+      <h3>Drug & Safety Data</h3>
+      <p>Medicine names identified by AI are used to query the <strong>OpenFDA API</strong> — a public database maintained by the U.S. Food and Drug Administration — to retrieve safety information including warnings, adverse reactions, and contraindications.</p>
+
+      <h3>What We Never Do</h3>
+      <ul>
+        <li><strong>No selling of data:</strong> Your images or health information are never sold to third parties</li>
+        <li><strong>No advertising targeting:</strong> We do not use your data for advertising purposes</li>
+        <li><strong>No profiling:</strong> We do not build personal profiles from your usage</li>
+        <li><strong>No sharing:</strong> Health data is never shared with insurance companies, employers, or data brokers</li>
+      </ul>
+
+      <h3>API Usage Logs</h3>
+      <p>For B2B API partners, usage logs record the <strong>medicine name and timestamp</strong> of each API call for billing and rate-limiting purposes. These logs contain no personal data about end users.</p>
+    </div>
+
+    <!-- 4. B2B API Partners -->
+    <div class="doc-section" id="b2b-partners">
+      <h2><span class="section-icon">🤝</span> B2B API Partners</h2>
+      <p>Pill Pal offers a licensed API for businesses (healthcare apps, pharmacy platforms, etc.) to integrate medicine identification and drug interaction features into their own products.</p>
+
+      <h3>What We Track for Partners</h3>
+      <ul>
+        <li>API key usage counts and monthly totals (for billing and rate limiting)</li>
+        <li>Endpoint called and medicine name resolved (for usage logs, retained 90 days)</li>
+        <li>Client name and email provided at key registration</li>
+      </ul>
+
+      <h3>Partner Responsibilities</h3>
+      <ul>
+        <li>Partners are fully responsible for their own users' privacy and must maintain their own compliant privacy policies</li>
+        <li>Pill Pal does <strong>not</strong> receive, process, or store the personal data of a partner's end users</li>
+        <li>Partners must not use the API to process data in violation of applicable health data laws (HIPAA, GDPR, etc.)</li>
+      </ul>
+
+      <div class="callout">
+        <span class="callout-icon">📄</span>
+        <div>For B2B Data Processing Agreements (DPAs) required under GDPR or similar regulations, contact <a href="mailto:api@pillpal.app">api@pillpal.app</a>.</div>
+      </div>
+    </div>
+
+    <!-- 5. Data Storage & Retention -->
+    <div class="doc-section" id="data-retention">
+      <h2><span class="section-icon">🗄️</span> Data Storage &amp; Retention</h2>
+
+      <ul>
+        <li><strong>Medicine images:</strong> Processed entirely in memory. Never written to disk. Discarded immediately after the AI response is returned.</li>
+        <li><strong>Scan history:</strong> Stored in the application's SQLite database. Retained indefinitely until you delete it. You can delete individual scans or full profiles from within the app at any time.</li>
+        <li><strong>Family profiles &amp; conditions:</strong> Stored in the application database, linked to your session. Deleted when you delete the profile.</li>
+        <li><strong>API usage logs:</strong> Retained for <strong>90 days</strong> for billing and abuse prevention purposes, then automatically purged.</li>
+        <li><strong>API keys:</strong> Stored until deactivated by an administrator. Deactivated keys are retained (inactive) for audit purposes.</li>
+      </ul>
+    </div>
+
+    <!-- 6. Third Party Services -->
+    <div class="doc-section" id="third-parties">
+      <h2><span class="section-icon">🔗</span> Third Party Services</h2>
+      <p>Pill Pal relies on the following third-party services to operate. Each has its own privacy policy governing how they handle data:</p>
+
+      <table class="services-table">
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Purpose</th>
+            <th>Data Sent</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Anthropic Claude API</td>
+            <td>AI vision and language processing for medicine identification and drug interaction analysis</td>
+            <td>Medicine image (base64), medicine name, dosage</td>
+          </tr>
+          <tr>
+            <td>OpenFDA API</td>
+            <td>Public U.S. drug label database for safety warnings, adverse reactions, and contraindications</td>
+            <td>Medicine brand name (query only)</td>
+          </tr>
+          <tr>
+            <td>Railway</td>
+            <td>Cloud hosting and infrastructure</td>
+            <td>Standard server request logs (IP, timestamp)</td>
+          </tr>
+          <tr>
+            <td>Google Fonts</td>
+            <td>UI typography (Inter font)</td>
+            <td>Standard browser request (IP, user-agent)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>We do not use analytics platforms (e.g. Google Analytics), advertising networks, or social media tracking pixels.</p>
+    </div>
+
+    <!-- 7. Children's Privacy -->
+    <div class="doc-section" id="childrens-privacy">
+      <h2><span class="section-icon">👶</span> Children's Privacy</h2>
+      <p>Pill Pal is <strong>not intended for use by children under the age of 13</strong>. We do not knowingly collect any personal data from minors.</p>
+      <p>If you believe that a child under 13 has submitted data through Pill Pal, please contact us immediately at <a href="mailto:privacy@pillpal.app">privacy@pillpal.app</a> and we will take steps to remove that information.</p>
+    </div>
+
+    <!-- 8. Your Rights -->
+    <div class="doc-section" id="your-rights">
+      <h2><span class="section-icon">✅</span> Your Rights</h2>
+      <p>Depending on your jurisdiction, you may have the following rights regarding your data:</p>
+
+      <h3>Right to Delete</h3>
+      <ul>
+        <li>You can delete individual scan records directly from the <strong>Medicine Cabinet</strong> tab in the app</li>
+        <li>You can delete entire Family Profiles (and all associated scans) from the profile manager</li>
+        <li>To request complete deletion of any data associated with your usage, email <a href="mailto:privacy@pillpal.app">privacy@pillpal.app</a></li>
+      </ul>
+
+      <h3>Right to Know</h3>
+      <ul>
+        <li>You have the right to know what data is stored about you</li>
+        <li>Scan history stored in the app is visible to you directly within the Medicine Cabinet</li>
+        <li>For API partners, usage logs are accessible via the admin dashboard</li>
+      </ul>
+
+      <h3>Right to Portability</h3>
+      <ul>
+        <li>You may request an export of your scan history by contacting <a href="mailto:privacy@pillpal.app">privacy@pillpal.app</a></li>
+      </ul>
+
+      <div class="callout">
+        <span class="callout-icon">🇪🇺</span>
+        <div>If you are located in the European Economic Area (EEA), you have additional rights under the General Data Protection Regulation (GDPR). To exercise these rights, contact <a href="mailto:privacy@pillpal.app">privacy@pillpal.app</a>.</div>
+      </div>
+    </div>
+
+    <!-- 9. Medical Disclaimer -->
+    <div class="doc-section" id="medical-disclaimer">
+      <h2><span class="section-icon">⚕️</span> Medical Disclaimer</h2>
+
+      <div class="disclaimer-box">
+        <span class="disc-icon">⚠️</span>
+        <p>Pill Pal provides general medicine information only. It is <strong>not a medical device</strong>, does not provide medical advice, and is <strong>not a substitute for professional medical consultation</strong>. The information provided — including medicine identification, drug interaction analysis, warnings, and adverse reactions — is sourced from AI models and public databases and may be incomplete, inaccurate, or not applicable to your specific situation. Always consult a qualified healthcare provider, physician, or licensed pharmacist before making any health or medication decisions. In a medical emergency, call your local emergency services immediately.</p>
+      </div>
+
+      <p>By using Pill Pal, you acknowledge that you understand this limitation and agree to use the service for informational purposes only.</p>
+    </div>
+
+    <!-- 10. Contact -->
+    <div class="doc-section" id="contact">
+      <h2><span class="section-icon">📬</span> Contact Us</h2>
+      <p>If you have any questions, concerns, or requests regarding this Privacy Policy or your data, please reach out:</p>
+
+      <div class="contact-block">
+        <div class="contact-item">
+          <span class="contact-item-icon">🔒</span>
+          <div>
+            <div class="contact-item-label">Privacy & Data Requests</div>
+            <a class="contact-item-value" href="mailto:privacy@pillpal.app">privacy@pillpal.app</a>
+          </div>
+        </div>
+        <div class="contact-item">
+          <span class="contact-item-icon">🤝</span>
+          <div>
+            <div class="contact-item-label">B2B API & Data Processing Agreements</div>
+            <a class="contact-item-value" href="mailto:api@pillpal.app">api@pillpal.app</a>
+          </div>
+        </div>
+      </div>
+
+      <p style="margin-top:20px;">We aim to respond to all privacy-related inquiries within <strong>5 business days</strong>.</p>
+    </div>
+
+    <footer>
+      <span>© 2026 Pill Pal. All rights reserved.</span>
+      <span>
+        <a href="/">App</a> &nbsp;·&nbsp;
+        <a href="/api-docs.html">API Docs</a> &nbsp;·&nbsp;
+        <a href="mailto:privacy@pillpal.app">privacy@pillpal.app</a>
+      </span>
+    </footer>
+
+  </div><!-- /content -->
+</div><!-- /page -->
+
+<script>
+  // Highlight active nav link on scroll
+  const sections = document.querySelectorAll('.doc-section');
+  const navLinks  = document.querySelectorAll('.nav-link');
+  const observer  = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
