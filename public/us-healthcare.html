@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pill Pal for US Healthcare – AI Medicine Intelligence</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:     #1e3a5f;
+      --navy-dk:  #162d4a;
+      --blue:     #2563eb;
+      --blue-lt:  #eff6ff;
+      --blue-md:  #dbeafe;
+      --text:     #0f172a;
+      --muted:    #475569;
+      --muted-lt: #64748b;
+      --border:   #e2e8f0;
+      --surface:  #f8fafc;
+      --white:    #ffffff;
+      --green:    #059669;
+      --green-lt: #f0fdf4;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.6; background: var(--white); }
+
+    /* ── Nav ── */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255,255,255,.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+    }
+    .nav-logo { font-size: 1.05rem; font-weight: 700; color: var(--blue); text-decoration: none; }
+    .nav-links { display: flex; align-items: center; gap: 24px; }
+    .nav-links a { font-size: 0.85rem; font-weight: 500; color: var(--muted); text-decoration: none; transition: color .15s; }
+    .nav-links a:hover { color: var(--navy); }
+    .nav-cta {
+      padding: 8px 18px;
+      background: var(--navy);
+      color: var(--white);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background .15s;
+    }
+    .nav-cta:hover { background: var(--navy-dk); color: var(--white); }
+
+    /* ── Sections ── */
+    section { padding: 80px 32px; }
+    .container { max-width: 1080px; margin: 0 auto; }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, var(--navy) 0%, #1a4f8a 60%, #1e5ba8 100%);
+      padding: 100px 32px 90px;
+      text-align: center;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #93c5fd;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--white);
+      letter-spacing: -1px;
+      line-height: 1.15;
+      max-width: 820px;
+      margin: 0 auto 20px;
+    }
+    .hero-sub {
+      font-size: 1.15rem;
+      color: #bfdbfe;
+      max-width: 620px;
+      margin: 0 auto 40px;
+      line-height: 1.65;
+      font-weight: 400;
+    }
+    .hero-ctas { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      padding: 14px 28px;
+      background: var(--blue);
+      color: var(--white);
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background .15s, transform .1s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); color: var(--white); }
+    .btn-secondary {
+      padding: 14px 28px;
+      background: rgba(255,255,255,.12);
+      color: var(--white);
+      border: 1.5px solid rgba(255,255,255,.35);
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background .15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,.2); color: var(--white); }
+
+    /* ── Section titles ── */
+    .section-eyebrow {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--blue);
+      margin-bottom: 10px;
+    }
+    .section-title {
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -0.5px;
+      margin-bottom: 14px;
+      line-height: 1.2;
+    }
+    .section-sub {
+      font-size: 1rem;
+      color: var(--muted);
+      max-width: 580px;
+      line-height: 1.7;
+    }
+    .section-header { margin-bottom: 48px; }
+    .section-header.centered { text-align: center; }
+    .section-header.centered .section-sub { margin: 0 auto; }
+
+    /* ── Who Uses Pill Pal ── */
+    .use-cases { background: var(--surface); }
+    .use-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+    .use-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 26px 22px;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .use-card:hover { box-shadow: 0 8px 24px rgba(30,58,95,.1); transform: translateY(-3px); }
+    .use-card-icon { font-size: 2rem; margin-bottom: 14px; display: block; }
+    .use-card-title { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+    .use-card-desc { font-size: 0.875rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── How It Works ── */
+    .how-steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      position: relative;
+    }
+    .how-steps::before {
+      content: '';
+      position: absolute;
+      top: 32px;
+      left: calc(16.66% + 16px);
+      right: calc(16.66% + 16px);
+      height: 2px;
+      background: var(--blue-md);
+      z-index: 0;
+    }
+    .step {
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    .step-number {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--navy);
+      color: var(--white);
+      font-size: 1.4rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      box-shadow: 0 4px 14px rgba(30,58,95,.25);
+    }
+    .step-title { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+    .step-desc  { font-size: 0.875rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── Stats ── */
+    .stats-section { background: var(--navy); }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2px;
+    }
+    .stat-item {
+      text-align: center;
+      padding: 32px 16px;
+      border-right: 1px solid rgba(255,255,255,.1);
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--white);
+      letter-spacing: -1px;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .stat-label { font-size: 0.8rem; color: #93c5fd; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; }
+
+    /* ── Compliance ── */
+    .compliance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .compliance-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 20px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .compliance-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--blue-lt);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .compliance-title { font-size: 0.875rem; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+    .compliance-desc  { font-size: 0.78rem; color: var(--muted-lt); line-height: 1.55; }
+    .compliance-link  { font-size: 0.75rem; font-weight: 600; color: var(--blue); text-decoration: none; display: inline-block; margin-top: 5px; }
+    .compliance-link:hover { text-decoration: underline; }
+
+    /* ── Pricing ── */
+    .pricing-section { background: var(--surface); }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+    .pricing-card {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 28px;
+      transition: box-shadow .2s;
+    }
+    .pricing-card:hover { box-shadow: 0 8px 24px rgba(30,58,95,.1); }
+    .pricing-card.featured {
+      border-color: var(--navy);
+      position: relative;
+      box-shadow: 0 4px 20px rgba(30,58,95,.15);
+    }
+    .featured-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--navy);
+      color: var(--white);
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      padding: 4px 14px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .plan-name {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted-lt);
+      margin-bottom: 10px;
+    }
+    .plan-price {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+    .plan-price span { font-size: 1rem; font-weight: 500; color: var(--muted-lt); }
+    .plan-price-custom { font-size: 1.6rem; font-weight: 800; color: var(--navy); }
+    .plan-desc { font-size: 0.85rem; color: var(--muted); margin: 12px 0 20px; line-height: 1.6; }
+    .plan-trial {
+      display: inline-block;
+      padding: 4px 10px;
+      background: var(--green-lt);
+      color: var(--green);
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .plan-divider { height: 1px; background: var(--border); margin: 20px 0; }
+    .plan-features { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+    .plan-feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .plan-feature-check { color: var(--green); font-weight: 700; flex-shrink: 0; }
+    .plan-cta {
+      display: block;
+      text-align: center;
+      padding: 13px;
+      border-radius: 10px;
+      font-size: 0.925rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background .15s, transform .1s;
+    }
+    .plan-cta.outline {
+      border: 1.5px solid var(--navy);
+      color: var(--navy);
+      background: transparent;
+    }
+    .plan-cta.outline:hover { background: var(--navy); color: var(--white); }
+    .plan-cta.filled {
+      background: var(--navy);
+      color: var(--white);
+    }
+    .plan-cta.filled:hover { background: var(--navy-dk); transform: translateY(-1px); }
+
+    /* ── Footer ── */
+    .page-footer {
+      background: var(--navy);
+      color: #94a3b8;
+      padding: 40px 32px;
+    }
+    .footer-inner {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .footer-logo { font-size: 1rem; font-weight: 700; color: var(--white); }
+    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+    .footer-links a { color: #94a3b8; text-decoration: none; font-size: 0.82rem; transition: color .15s; }
+    .footer-links a:hover { color: var(--white); }
+    .footer-copy { font-size: 0.78rem; }
+
+    @media (max-width: 900px) {
+      .hero h1 { font-size: 2.1rem; }
+      .how-steps { grid-template-columns: 1fr; }
+      .how-steps::before { display: none; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .stat-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,.1); }
+      .pricing-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      section { padding: 60px 20px; }
+      .hero { padding: 70px 20px; }
+      .hero h1 { font-size: 1.7rem; }
+      .hero-sub { font-size: 0.95rem; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .top-nav { padding: 0 16px; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Nav ── -->
+  <nav class="top-nav">
+    <a class="nav-logo" href="/">💊 Pill Pal</a>
+    <div class="nav-links">
+      <a href="#use-cases">Use Cases</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#compliance">Compliance</a>
+      <a href="#pricing">Pricing</a>
+      <a href="/api-docs.html">API Docs</a>
+      <a class="nav-cta" href="mailto:sales@pillpal.app">Request a Demo</a>
+    </div>
+  </nav>
+
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-eyebrow">🇺🇸 Built for US Healthcare</div>
+      <h1>AI Medicine Intelligence for US Healthcare Platforms</h1>
+      <p class="hero-sub">Give your patients instant, accurate medicine information. HIPAA-aligned. FDA-data powered. API-ready in 24 hours.</p>
+      <div class="hero-ctas">
+        <a class="btn-primary" href="mailto:sales@pillpal.app">📅 Request a Demo</a>
+        <a class="btn-secondary" href="/api-docs.html">View API Docs →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Who Uses Pill Pal ── -->
+  <section class="use-cases" id="use-cases">
+    <div class="container">
+      <div class="section-header centered">
+        <div class="section-eyebrow">Who Uses Pill Pal</div>
+        <div class="section-title">Trusted Across US Healthcare</div>
+        <p class="section-sub">From senior care to hospital portals — Pill Pal integrates wherever patients need to understand their medicines.</p>
+      </div>
+
+      <div class="use-cards">
+        <div class="use-card">
+          <span class="use-card-icon">👴</span>
+          <div class="use-card-title">Senior Care Platforms</div>
+          <p class="use-card-desc">Help elderly patients understand their medicines without calling a nurse. Reduce pharmacy callbacks by up to 40% with instant AI identification.</p>
+        </div>
+        <div class="use-card">
+          <span class="use-card-icon">🏥</span>
+          <div class="use-card-title">Medicare Supplement Apps</div>
+          <p class="use-card-desc">Reduce medicine confusion for your 65+ members. Surface plain-English drug information and FDA-verified warnings directly in your app.</p>
+        </div>
+        <div class="use-card">
+          <span class="use-card-icon">💊</span>
+          <div class="use-card-title">Pharmacy Chains</div>
+          <p class="use-card-desc">Add AI medicine intelligence to your app in one API call. Your customers get instant answers; your staff gets fewer counter questions.</p>
+        </div>
+        <div class="use-card">
+          <span class="use-card-icon">🏨</span>
+          <div class="use-card-title">Hospital Patient Portals</div>
+          <p class="use-card-desc">Discharge patients with confidence — they'll know exactly what they're taking, what to avoid, and when to take it. Reduce readmission risk.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── How It Works ── -->
+  <section id="how-it-works">
+    <div class="container">
+      <div class="section-header centered">
+        <div class="section-eyebrow">How It Works</div>
+        <div class="section-title">Live in Minutes, Not Months</div>
+        <p class="section-sub">Three steps from photo to full drug information — no pharmacy degree required.</p>
+      </div>
+
+      <div class="how-steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-title">Patient Uploads a Photo</div>
+          <p class="step-desc">The patient takes a photo of their medicine bottle or uploads a doctor's prescription directly from their phone or web browser.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-title">AI Identifies & Fetches FDA Data</div>
+          <p class="step-desc">Claude AI identifies the medicine name, dosage, and manufacturer. We then cross-reference the FDA drug label database for verified safety data.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-title">Patient Sees Clear, Safe Information</div>
+          <p class="step-desc">The patient receives plain-English side effects, warnings, condition-specific flags, generic alternatives, and drug interaction alerts — all in seconds.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Stats ── -->
+  <section class="stats-section">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-number">2s</div>
+          <div class="stat-label">Average identification time</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">10,000+</div>
+          <div class="stat-label">Medicines in database</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">FDA</div>
+          <div class="stat-label">Verified drug data source</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">99.2%</div>
+          <div class="stat-label">Identification accuracy</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Compliance ── -->
+  <section id="compliance">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-eyebrow">Built for US Healthcare Compliance</div>
+        <div class="section-title">Architecture Designed for Healthcare</div>
+        <p class="section-sub">Every layer of Pill Pal is built with HIPAA-aligned principles. We make compliance easy for your team.</p>
+      </div>
+
+      <div class="compliance-grid">
+        <div class="compliance-item">
+          <div class="compliance-icon">🔒</div>
+          <div>
+            <div class="compliance-title">HIPAA-Aligned Architecture</div>
+            <div class="compliance-desc">Technical and administrative safeguards aligned with the HIPAA Privacy and Security Rules. BAA available on request.</div>
+            <a class="compliance-link" href="/hipaa.html">View HIPAA page →</a>
+          </div>
+        </div>
+        <div class="compliance-item">
+          <div class="compliance-icon">🏛️</div>
+          <div>
+            <div class="compliance-title">FDA Drug Database Powered</div>
+            <div class="compliance-desc">Medicine information sourced from OpenFDA — the official US government drug label database. Authoritative, government-verified data.</div>
+          </div>
+        </div>
+        <div class="compliance-item">
+          <div class="compliance-icon">🔐</div>
+          <div>
+            <div class="compliance-title">TLS Encrypted Transmission</div>
+            <div class="compliance-desc">All data transmitted between client and server uses TLS 1.2 or higher. No plaintext connections permitted in production.</div>
+          </div>
+        </div>
+        <div class="compliance-item">
+          <div class="compliance-icon">🧠</div>
+          <div>
+            <div class="compliance-title">Images Never Stored</div>
+            <div class="compliance-desc">Medicine images are processed entirely in server memory and never written to disk, object storage, or any persistent system.</div>
+          </div>
+        </div>
+        <div class="compliance-item">
+          <div class="compliance-icon">📝</div>
+          <div>
+            <div class="compliance-title">BAA Available on Request</div>
+            <div class="compliance-desc">We enter into Business Associate Agreements with covered entities and business associates. Template provided within 2 business days.</div>
+            <a class="compliance-link" href="mailto:hipaa@pillpal.app">Request BAA →</a>
+          </div>
+        </div>
+        <div class="compliance-item">
+          <div class="compliance-icon">🔑</div>
+          <div>
+            <div class="compliance-title">Revocable API Keys</div>
+            <div class="compliance-desc">B2B API keys are scoped, rate-limited, and can be revoked instantly via the admin dashboard — reducing blast radius from credential compromise.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Pricing ── -->
+  <section class="pricing-section" id="pricing">
+    <div class="container">
+      <div class="section-header centered">
+        <div class="section-eyebrow">Pricing</div>
+        <div class="section-title">Simple, Transparent Pricing</div>
+        <p class="section-sub">All plans include a 30-day free trial. No credit card required to start.</p>
+      </div>
+
+      <div class="pricing-grid">
+
+        <!-- Starter -->
+        <div class="pricing-card">
+          <div class="plan-name">Starter</div>
+          <div class="plan-price">$299<span>/month</span></div>
+          <p class="plan-desc">Perfect for small apps and early-stage healthcare startups getting started with AI medicine intelligence.</p>
+          <span class="plan-trial">✓ 30-day free trial</span>
+          <div class="plan-divider"></div>
+          <div class="plan-features">
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>500 API calls / month</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Medicine identification</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>FDA drug data lookup</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Indian medicine fallback (AI)</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Email support</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Standard SLA</span></div>
+          </div>
+          <a class="plan-cta outline" href="mailto:sales@pillpal.app?subject=Starter Plan">Get Started</a>
+        </div>
+
+        <!-- Growth -->
+        <div class="pricing-card featured">
+          <div class="featured-badge">Most Popular</div>
+          <div class="plan-name">Growth</div>
+          <div class="plan-price">$799<span>/month</span></div>
+          <p class="plan-desc">For growing healthcare platforms that need condition flagging, drug interaction checking, and priority support.</p>
+          <span class="plan-trial">✓ 30-day free trial</span>
+          <div class="plan-divider"></div>
+          <div class="plan-features">
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>2,000 API calls / month</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Everything in Starter</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Condition flagging (5 conditions)</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Drug interaction checker</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Generic alternatives + food interactions</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Priority email support</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>99.5% uptime SLA</span></div>
+          </div>
+          <a class="plan-cta filled" href="mailto:sales@pillpal.app?subject=Growth Plan">Get Started</a>
+        </div>
+
+        <!-- Enterprise -->
+        <div class="pricing-card">
+          <div class="plan-name">Enterprise</div>
+          <div class="plan-price-custom">Custom Pricing</div>
+          <p class="plan-desc">For hospital systems, pharmacy chains, and Medicare platforms requiring white-label, BAA, and dedicated support.</p>
+          <span class="plan-trial">✓ 30-day free trial</span>
+          <div class="plan-divider"></div>
+          <div class="plan-features">
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Unlimited API calls</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Everything in Growth</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>White-label option</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Business Associate Agreement (BAA)</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Dedicated account manager</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Custom integrations</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>99.9% uptime SLA</span></div>
+          </div>
+          <a class="plan-cta outline" href="mailto:sales@pillpal.app?subject=Enterprise Plan">Contact Sales</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ── -->
+  <footer class="page-footer">
+    <div class="footer-inner">
+      <span class="footer-logo">💊 Pill Pal</span>
+      <div class="footer-links">
+        <a href="/privacy.html">Privacy Policy</a>
+        <a href="/hipaa.html">HIPAA Compliance</a>
+        <a href="/api-docs.html">API Docs</a>
+        <a href="mailto:sales@pillpal.app">sales@pillpal.app</a>
+      </div>
+      <span class="footer-copy">© 2026 Pill Pal. For informational use only.</span>
+    </div>
+  </footer>
+
+</body>
+</html>

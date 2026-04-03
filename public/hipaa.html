@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HIPAA Compliance – Pill Pal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #ffffff;
+      --surface: #f8fafc;
+      --border:  #e2e8f0;
+      --text:    #0f172a;
+      --muted:   #64748b;
+      --blue:    #2563eb;
+      --blue-lt: #eff6ff;
+      --green:   #059669;
+      --green-lt:#f0fdf4;
+      --green-bd:#bbf7d0;
+      --navy:    #1e3a5f;
+    }
+
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+    /* ── Layout ── */
+    .page { display: flex; min-height: 100vh; }
+
+    /* Sidebar */
+    nav.sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 32px 20px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .nav-logo { font-size: 1.1rem; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: block; text-decoration: none; }
+    .nav-back { font-size: 0.78rem; color: var(--muted); text-decoration: none; display: flex; align-items: center; gap: 4px; margin-bottom: 28px; }
+    .nav-back:hover { color: var(--blue); }
+    .nav-section { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 18px 0 8px; }
+    .nav-link {
+      display: block;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 500;
+      transition: background .15s, color .15s;
+      margin-bottom: 2px;
+      line-height: 1.4;
+    }
+    .nav-link:hover { background: var(--border); color: var(--text); }
+    .nav-link.active { background: var(--blue-lt); color: var(--blue); }
+
+    /* Content */
+    .content { flex: 1; max-width: 780px; padding: 60px 48px 80px; }
+
+    /* ── Header ── */
+    .doc-header { margin-bottom: 44px; padding-bottom: 28px; border-bottom: 1px solid var(--border); }
+    .doc-eyebrow { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--blue); margin-bottom: 10px; }
+    .doc-title { font-size: 2rem; font-weight: 700; color: var(--text); letter-spacing: -0.5px; margin-bottom: 8px; }
+    .doc-meta { font-size: 0.85rem; color: var(--muted); }
+    .header-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+    .header-badge.green { background: var(--green-lt); color: var(--green); border: 1px solid var(--green-bd); }
+    .header-badge.blue  { background: var(--blue-lt);  color: var(--blue);  border: 1px solid #bfdbfe; }
+
+    /* ── Sections ── */
+    .doc-section { margin-bottom: 52px; scroll-margin-top: 24px; }
+    h2 {
+      font-size: 1.2rem; font-weight: 700; color: var(--text);
+      margin-bottom: 14px; padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-icon { font-size: 1.1rem; }
+    h3 { font-size: 0.95rem; font-weight: 700; color: var(--text); margin: 20px 0 8px; }
+    p  { font-size: 0.9rem; color: var(--muted); margin-bottom: 12px; line-height: 1.75; }
+    a  { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    ul {
+      margin: 8px 0 14px 0;
+      padding-left: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    ul li {
+      font-size: 0.875rem;
+      color: var(--muted);
+      padding-left: 18px;
+      position: relative;
+      line-height: 1.65;
+    }
+    ul li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      color: var(--border);
+      font-weight: 700;
+    }
+    ul li strong { color: var(--text); font-weight: 600; }
+
+    /* ── Safeguard cards ── */
+    .safeguard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .safeguard-card {
+      padding: 16px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .safeguard-icon { font-size: 1.3rem; margin-bottom: 8px; display: block; }
+    .safeguard-title { font-size: 0.85rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .safeguard-desc  { font-size: 0.8rem; color: var(--muted); line-height: 1.55; }
+
+    /* ── Callout ── */
+    .callout {
+      display: flex;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      line-height: 1.65;
+      margin: 14px 0;
+    }
+    .callout-icon { flex-shrink: 0; font-size: 1rem; }
+    .callout.info  { color: #1e40af; background: var(--blue-lt); border: 1px solid #bfdbfe; }
+    .callout.green { color: #065f46; background: var(--green-lt); border: 1px solid var(--green-bd); }
+
+    /* ── Sub-processors table ── */
+    .services-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 14px 0; }
+    .services-table th {
+      text-align: left; padding: 9px 14px;
+      background: var(--surface); border: 1px solid var(--border);
+      font-size: 0.7rem; text-transform: uppercase;
+      letter-spacing: .06em; color: var(--muted);
+    }
+    .services-table td { padding: 11px 14px; border: 1px solid var(--border); color: var(--muted); vertical-align: top; }
+    .services-table td:first-child { font-weight: 600; color: var(--text); white-space: nowrap; }
+    .services-table tr:hover td { background: var(--surface); }
+
+    /* ── Contact block ── */
+    .contact-block { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .contact-item-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .contact-item-label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 2px; }
+    .contact-item-value { font-size: 0.875rem; font-weight: 600; color: var(--blue); }
+
+    /* ── BAA highlight ── */
+    .baa-box {
+      background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
+      border: 1px solid #bbf7d0;
+      border-radius: 12px;
+      padding: 22px 24px;
+      margin: 18px 0;
+    }
+    .baa-box-title { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+    .baa-box p { color: #374151; margin-bottom: 14px; }
+    .baa-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: var(--navy);
+      color: #fff;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity .15s;
+    }
+    .baa-btn:hover { opacity: .85; text-decoration: none; }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 60px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--blue); }
+
+    @media (max-width: 768px) {
+      nav.sidebar { display: none; }
+      .content { padding: 32px 20px 60px; }
+      .doc-title { font-size: 1.5rem; }
+      .safeguard-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── Sidebar ── -->
+  <nav class="sidebar">
+    <a class="nav-logo" href="/">💊 Pill Pal</a>
+    <a class="nav-back" href="/">← Back to App</a>
+
+    <div class="nav-section">HIPAA</div>
+    <a class="nav-link" href="#commitment">Our Commitment</a>
+    <a class="nav-link" href="#data">What Data We Handle</a>
+    <a class="nav-link" href="#technical">Technical Safeguards</a>
+    <a class="nav-link" href="#administrative">Administrative Safeguards</a>
+    <a class="nav-link" href="#baa">Business Associate Agreements</a>
+    <a class="nav-link" href="#subprocessors">Sub-processors</a>
+    <a class="nav-link" href="#rights">Patient Rights</a>
+    <a class="nav-link" href="#incident">Incident Response</a>
+    <a class="nav-link" href="#contact">Contact & BAA Requests</a>
+
+    <div class="nav-section">Legal</div>
+    <a class="nav-link" href="/privacy.html">Privacy Policy</a>
+    <a class="nav-link" href="/api-docs.html">API Docs</a>
+  </nav>
+
+  <!-- ── Content ── -->
+  <div class="content">
+
+    <div class="doc-header">
+      <div class="doc-eyebrow">Legal & Compliance</div>
+      <div class="doc-title">💊 Pill Pal — HIPAA Compliance</div>
+      <div class="doc-meta">Last updated: April 1, 2026</div>
+      <div class="header-badges">
+        <span class="header-badge green">✓ HIPAA-Aligned Architecture</span>
+        <span class="header-badge green">✓ BAA Available</span>
+        <span class="header-badge blue">🔒 TLS 1.2+ Encrypted</span>
+      </div>
+    </div>
+
+    <!-- 1. Commitment -->
+    <div class="doc-section" id="commitment">
+      <h2><span class="section-icon">🏥</span> Our Commitment to HIPAA</h2>
+      <p>Pill Pal is designed from the ground up with HIPAA Privacy Rule and Security Rule principles in mind. We are committed to protecting Protected Health Information (PHI) and to supporting our healthcare partners in meeting their own compliance obligations.</p>
+      <p>This page describes the technical and administrative safeguards we have implemented, our data handling practices, and how covered entities and business associates can engage with us under a Business Associate Agreement (BAA).</p>
+
+      <div class="callout green">
+        <span class="callout-icon">✅</span>
+        <div>Pill Pal is willing to enter into BAAs with covered entities and business associates. Contact <a href="mailto:hipaa@pillpal.app">hipaa@pillpal.app</a> to begin the process.</div>
+      </div>
+    </div>
+
+    <!-- 2. Data -->
+    <div class="doc-section" id="data">
+      <h2><span class="section-icon">📋</span> What Data We Handle</h2>
+      <p>Pill Pal handles a minimal and well-defined set of health-related data. We apply data minimization principles throughout and do not collect direct patient identifiers.</p>
+      <ul>
+        <li><strong>Medicine images</strong> — uploaded by the user, processed in real-time via encrypted API calls to Anthropic Claude. Images are held in memory only and are never written to disk or any permanent storage.</li>
+        <li><strong>Health conditions</strong> — optionally declared by the user (e.g. high blood pressure, diabetes). Stored only in the application's local session database alongside scan history. Never linked to a real identity.</li>
+        <li><strong>Medicine names and timestamps</strong> — stored in scan history to power the Medicine Cabinet, reminders, and dashboard features. No patient names, Social Security Numbers, insurance IDs, dates of birth, or other direct identifiers are ever collected.</li>
+        <li><strong>API usage logs</strong> — for B2B partners, logs contain only the API key identifier, endpoint called, medicine name, and timestamp. No patient data appears in these logs.</li>
+      </ul>
+
+      <div class="callout info">
+        <span class="callout-icon">ℹ️</span>
+        <div>Pill Pal does not collect, store, or transmit patient names, SSNs, insurance IDs, dates of birth, addresses, phone numbers, or any other HIPAA-defined direct identifiers.</div>
+      </div>
+    </div>
+
+    <!-- 3. Technical -->
+    <div class="doc-section" id="technical">
+      <h2><span class="section-icon">🔒</span> Technical Safeguards</h2>
+      <p>We implement the following technical controls in alignment with the HIPAA Security Rule's Technical Safeguard standards (45 CFR § 164.312):</p>
+
+      <div class="safeguard-grid">
+        <div class="safeguard-card">
+          <span class="safeguard-icon">🔐</span>
+          <div class="safeguard-title">Encryption in Transit</div>
+          <div class="safeguard-desc">All data transmitted between the client, our servers, and third-party APIs uses TLS 1.2 or higher. No plaintext HTTP connections are permitted in production.</div>
+        </div>
+        <div class="safeguard-card">
+          <span class="safeguard-icon">🧠</span>
+          <div class="safeguard-title">In-Memory Image Processing</div>
+          <div class="safeguard-desc">Medicine images are processed entirely in server memory using multer's <code>memoryStorage</code>. They are never written to disk, temporary files, or object storage.</div>
+        </div>
+        <div class="safeguard-card">
+          <span class="safeguard-icon">🗄️</span>
+          <div class="safeguard-title">Restricted Database Access</div>
+          <div class="safeguard-desc">The SQLite database is accessible only through the application layer. No direct external connections to the database are possible.</div>
+        </div>
+        <div class="safeguard-card">
+          <span class="safeguard-icon">🔑</span>
+          <div class="safeguard-title">API Key Controls</div>
+          <div class="safeguard-desc">B2B API keys can be rotated or permanently revoked instantly via the admin dashboard. Each key carries a monthly usage cap to limit blast radius in the event of compromise.</div>
+        </div>
+        <div class="safeguard-card">
+          <span class="safeguard-icon">🛡️</span>
+          <div class="safeguard-title">Admin Authentication</div>
+          <div class="safeguard-desc">The admin dashboard requires a secret key passed as a request header. Session state is not persisted to cookies or external stores.</div>
+        </div>
+        <div class="safeguard-card">
+          <span class="safeguard-icon">📊</span>
+          <div class="safeguard-title">Minimal Data Retention</div>
+          <div class="safeguard-desc">Scan history is stored per-profile only. Users can delete individual scans or entire profiles — and all associated data — at any time from the Medicine Cabinet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Administrative -->
+    <div class="doc-section" id="administrative">
+      <h2><span class="section-icon">📁</span> Administrative Safeguards</h2>
+      <p>In alignment with HIPAA Security Rule Administrative Safeguard standards (45 CFR § 164.308), we maintain the following policies:</p>
+      <ul>
+        <li><strong>Access controls</strong> — Access to the admin dashboard requires authentication via a secret key. B2B API partners receive scoped, revocable keys with no access to other partners' data.</li>
+        <li><strong>Partner agreements</strong> — B2B API partners are required to agree to our data processing terms prior to receiving API credentials. A BAA is available for covered entities upon request.</li>
+        <li><strong>Log retention</strong> — API usage logs are retained for a maximum of 90 days, after which they are purged. Scan history is retained indefinitely until the user deletes it.</li>
+        <li><strong>Employee access</strong> — Access to production infrastructure is limited to authorized personnel only, following the principle of least privilege.</li>
+        <li><strong>Security review</strong> — We conduct periodic reviews of our access controls, data flows, and third-party sub-processor agreements.</li>
+      </ul>
+    </div>
+
+    <!-- 5. BAA -->
+    <div class="doc-section" id="baa">
+      <h2><span class="section-icon">📝</span> Business Associate Agreements (BAA)</h2>
+      <p>Under HIPAA, a Business Associate Agreement (BAA) is required when a vendor creates, receives, maintains, or transmits PHI on behalf of a covered entity. If your platform qualifies as a covered entity or works with one, we are prepared to enter into a BAA.</p>
+
+      <div class="baa-box">
+        <div class="baa-box-title">Request a BAA</div>
+        <p>Pill Pal is willing to enter into BAAs with covered entities and business associates. Our BAA template is available upon request and covers the obligations defined in 45 CFR § 164.504(e). We typically turn around executed agreements within 5 business days.</p>
+        <a class="baa-btn" href="mailto:hipaa@pillpal.app">✉️ Request BAA Template</a>
+      </div>
+
+      <ul>
+        <li><strong>Who should request a BAA</strong> — Healthcare providers, health plans, healthcare clearinghouses, and their business associates that will send patient-related medicine images or health data through Pill Pal.</li>
+        <li><strong>BAA contact</strong> — <a href="mailto:hipaa@pillpal.app">hipaa@pillpal.app</a></li>
+        <li><strong>Response time</strong> — We respond to all BAA inquiries within 2 business days.</li>
+      </ul>
+    </div>
+
+    <!-- 6. Sub-processors -->
+    <div class="doc-section" id="subprocessors">
+      <h2><span class="section-icon">🔗</span> Third-Party Sub-processors</h2>
+      <p>Pill Pal engages the following sub-processors in the delivery of its service. Each has been evaluated for data handling practices consistent with our HIPAA-aligned posture.</p>
+
+      <table class="services-table">
+        <thead>
+          <tr>
+            <th>Sub-processor</th>
+            <th>Purpose</th>
+            <th>Data Involved</th>
+            <th>Compliance Posture</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Anthropic Claude API</td>
+            <td>AI medicine identification, drug information synthesis</td>
+            <td>Medicine images (in transit only, never stored by Anthropic under enterprise terms)</td>
+            <td>Enterprise privacy terms; no training on API data</td>
+          </tr>
+          <tr>
+            <td>OpenFDA</td>
+            <td>FDA-verified drug label data</td>
+            <td>Medicine names only (no PHI transmitted)</td>
+            <td>US government public database; no data retained</td>
+          </tr>
+          <tr>
+            <td>Railway</td>
+            <td>Application infrastructure hosting</td>
+            <td>Application code and SQLite database</td>
+            <td>SOC 2 compliant infrastructure</td>
+          </tr>
+          <tr>
+            <td>Google Fonts</td>
+            <td>Typography (Inter font)</td>
+            <td>IP address only (standard CDN request)</td>
+            <td>No health data involved</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 7. Patient Rights -->
+    <div class="doc-section" id="rights">
+      <h2><span class="section-icon">👤</span> Patient Rights</h2>
+      <p>In accordance with the HIPAA Privacy Rule's individual rights provisions, Pill Pal supports the following rights for individuals whose health data is processed through our service:</p>
+      <ul>
+        <li><strong>Right to access</strong> — Users can view all their stored scan history at any time within the Medicine Cabinet tab.</li>
+        <li><strong>Right to deletion</strong> — Users can delete individual scans or entire family profiles (and all associated data) at any time, directly within the app. Enterprise partners may also request bulk deletion via API or by contacting us.</li>
+        <li><strong>Right to know</strong> — Users and partners may request a full description of what medicine data is stored for a given profile or API key by contacting <a href="mailto:hipaa@pillpal.app">hipaa@pillpal.app</a>.</li>
+        <li><strong>Right to restrict processing</strong> — Users may delete their data at any time. B2B partners may disable their API key to immediately stop all data processing.</li>
+      </ul>
+
+      <div class="callout info">
+        <span class="callout-icon">📩</span>
+        <div>To exercise any of these rights, contact us at <a href="mailto:hipaa@pillpal.app">hipaa@pillpal.app</a>. We respond to all individual rights requests within 5 business days.</div>
+      </div>
+    </div>
+
+    <!-- 8. Incident Response -->
+    <div class="doc-section" id="incident">
+      <h2><span class="section-icon">🚨</span> Incident Response</h2>
+      <p>In the event of a security incident involving PHI, Pill Pal follows the HIPAA Breach Notification Rule (45 CFR Part 164, Subpart D):</p>
+      <ul>
+        <li><strong>Detection and containment</strong> — Potential breaches are identified, contained, and assessed as promptly as possible.</li>
+        <li><strong>Notification timeline</strong> — Affected covered entities and, where required, individuals are notified within 60 days of discovery of a breach, in accordance with the Breach Notification Rule.</li>
+        <li><strong>Documentation</strong> — All incidents are documented including discovery date, scope of PHI involved, corrective actions taken, and notification timeline.</li>
+        <li><strong>Dedicated security contact</strong> — Report suspected security issues to <a href="mailto:security@pillpal.app">security@pillpal.app</a>. We treat all security reports as high priority.</li>
+      </ul>
+
+      <div class="callout green">
+        <span class="callout-icon">🔐</span>
+        <div>To report a suspected security vulnerability or data incident, email <a href="mailto:security@pillpal.app">security@pillpal.app</a>. We acknowledge all reports within 24 hours.</div>
+      </div>
+    </div>
+
+    <!-- 9. Contact -->
+    <div class="doc-section" id="contact">
+      <h2><span class="section-icon">✉️</span> Contact & BAA Requests</h2>
+      <p>For all HIPAA-related inquiries, BAA requests, individual rights requests, or security concerns, use the contacts below. We are committed to responding within 2 business days.</p>
+
+      <div class="contact-block">
+        <div class="contact-item">
+          <span class="contact-item-icon">🏥</span>
+          <div>
+            <div class="contact-item-label">HIPAA & BAA Inquiries</div>
+            <div class="contact-item-value"><a href="mailto:hipaa@pillpal.app">hipaa@pillpal.app</a></div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <span class="contact-item-icon">🔐</span>
+          <div>
+            <div class="contact-item-label">Security Incidents</div>
+            <div class="contact-item-value"><a href="mailto:security@pillpal.app">security@pillpal.app</a></div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <span class="contact-item-icon">💼</span>
+          <div>
+            <div class="contact-item-label">Sales & Enterprise</div>
+            <div class="contact-item-value"><a href="mailto:sales@pillpal.app">sales@pillpal.app</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <span>© 2026 Pill Pal. For informational use only.</span>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        <a href="/privacy.html">Privacy Policy</a>
+        <a href="/api-docs.html">API Docs</a>
+        <a href="/us-healthcare.html">Healthcare</a>
+        <a href="mailto:hipaa@pillpal.app">hipaa@pillpal.app</a>
+      </div>
+    </footer>
+
+  </div>
+</div>
+
+<script>
+  // Scroll-spy for sidebar
+  const sections = document.querySelectorAll('.doc-section[id]');
+  const links    = document.querySelectorAll('.nav-link[href^="#"]');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const link = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
