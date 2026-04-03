@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pill Pal – AI Medicine Intelligence</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Pill Pal">
+  <link rel="apple-touch-icon" href="/icon-192.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1264,9 +1270,130 @@
     .activity-info { flex: 1; min-width: 0; }
     .activity-name { font-weight: 600; font-size: 0.875rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .activity-meta { font-size: 0.75rem; color: #94a3b8; margin-top: 2px; }
+
+    /* ── Install Banner ── */
+    #install-banner {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: #eff6ff;
+      border-bottom: 1px solid #bfdbfe;
+      font-size: 0.82rem;
+      color: #1e40af;
+      font-weight: 500;
+      position: sticky;
+      top: 0;
+      z-index: 999;
+    }
+    #install-banner.visible { display: flex; }
+    #install-banner-text { flex: 1; }
+    #install-banner-btn {
+      padding: 6px 14px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    #install-banner-dismiss {
+      background: none;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 2px 6px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    /* ── Mobile PWA improvements ── */
+    @media (max-width: 600px) {
+      /* Main padding to avoid mobile browser bottom bar */
+      main { padding-bottom: 80px; }
+
+      /* Header compact */
+      header { padding: 12px 16px 0; }
+      header h1 { font-size: 1.4rem; }
+      header p  { font-size: 0.8rem; margin-bottom: 6px; }
+
+      /* Profile bar compact */
+      .profile-bar { padding: 8px 12px; }
+      .profile-avatar-lg { font-size: 1.2rem; }
+      .profile-bar-name  { font-size: 0.85rem; }
+      .profile-bar-label { font-size: 0.62rem; }
+      .profile-switch-btn { padding: 6px 10px; font-size: 0.75rem; }
+
+      /* Tabs: touch-friendly, wrap if needed */
+      .tab-bar { flex-wrap: wrap; }
+      .tab-btn {
+        min-height: 44px;
+        font-size: 0.78rem;
+        padding: 10px 8px;
+        gap: 4px;
+      }
+      .tab-btn svg { width: 13px; height: 13px; }
+
+      /* Cards full width */
+      .card { padding: 16px 14px; border-radius: 12px; }
+
+      /* Upload zone full width */
+      #drop-zone { padding: 28px 14px; }
+      .rx-drop-zone { padding: 22px 14px; }
+
+      /* Conditions: 2 per row */
+      .conditions-grid { grid-template-columns: 1fr 1fr; }
+
+      /* Results readable font */
+      .medicine-name { font-size: 1.25rem; }
+      .info-label    { min-width: 80px; font-size: 0.72rem; }
+      .info-value    { font-size: 0.85rem; }
+
+      /* All primary buttons touch-friendly */
+      #analyze-btn, #check-btn, #rx-scan-btn, #search-btn,
+      #reset-btn, #set-reminder-btn, .save-profile-btn,
+      .btn-view-details, .add-profile-btn, .profile-switch-btn,
+      .camera-btn { min-height: 44px; }
+
+      /* Drug checker: stack vertically */
+      .checker-inputs { flex-direction: column; gap: 10px; }
+      .vs-badge { margin-top: 0; align-self: center; }
+
+      /* Chat: fixed to bottom on mobile when chat section visible */
+      #chat-section { padding: 16px 14px; }
+      .chat-input-row {
+        position: sticky;
+        bottom: 0;
+        background: #fff;
+        padding: 8px 0 4px;
+        margin: 0 -14px;
+        padding-left: 14px;
+        padding-right: 14px;
+        border-top: 1px solid #f1f5f9;
+      }
+
+      /* Footer */
+      .app-footer { margin-bottom: 80px; }
+
+      /* Search bar: stack on very small screens */
+      .search-bar-wrap { flex-wrap: wrap; }
+      #search-input { min-width: 0; }
+    }
   </style>
 </head>
 <body>
+
+  <!-- ══ PWA INSTALL BANNER ══ -->
+  <div id="install-banner" role="banner" aria-label="Install app banner">
+    <span id="install-banner-text">📲 Add Pill Pal to your home screen for quick access</span>
+    <button id="install-banner-btn" style="display:none;">Install</button>
+    <button id="install-banner-dismiss" aria-label="Dismiss">✕</button>
+  </div>
 
   <header>
     <h1>💊 Pill Pal</h1>
@@ -3021,6 +3148,67 @@
     document.querySelectorAll('.chat-chip').forEach(chip => {
       chip.addEventListener('click', () => sendChatMessage(chip.textContent));
     });
+
+    /* ════════════════════════════════════════
+       Service Worker Registration
+    ════════════════════════════════════════ */
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
+    }
+
+    /* ════════════════════════════════════════
+       PWA Install Banner
+    ════════════════════════════════════════ */
+    (function() {
+      const banner       = document.getElementById('install-banner');
+      const bannerBtn    = document.getElementById('install-banner-btn');
+      const bannerDismiss= document.getElementById('install-banner-dismiss');
+
+      // Don't show if already installed (standalone) or user dismissed
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                        || window.navigator.standalone === true;
+      const dismissed = localStorage.getItem('pwa-banner-dismissed');
+      if (isStandalone || dismissed) return;
+
+      // Only show on mobile
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+                    || window.innerWidth <= 768;
+      if (!isMobile) return;
+
+      let deferredPrompt = null;
+
+      // Android: capture beforeinstallprompt
+      window.addEventListener('beforeinstallprompt', e => {
+        e.preventDefault();
+        deferredPrompt = e;
+        bannerBtn.style.display = '';
+        banner.classList.add('visible');
+      });
+
+      bannerBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') banner.classList.remove('visible');
+          deferredPrompt = null;
+        }
+      });
+
+      // iOS: show manual instruction (no beforeinstallprompt on iOS)
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isIOS) {
+        document.getElementById('install-banner-text').textContent =
+          '📲 Tap Share then "Add to Home Screen" to install Pill Pal';
+        banner.classList.add('visible');
+      }
+
+      bannerDismiss.addEventListener('click', () => {
+        banner.classList.remove('visible');
+        localStorage.setItem('pwa-banner-dismissed', '1');
+      });
+    })();
 
     /* ════════════════════════════════════════
        Page load init
