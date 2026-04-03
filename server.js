@@ -687,6 +687,113 @@ app.post('/api/scan-prescription', upload.single('prescription'), async (req, re
   }
 });
 
+// ── Medicine text search ──
+app.get('/api/search', async (req, res) => {
+  try {
+    const q = (req.query.q || '').trim();
+    if (!q) return res.status(400).json({ error: 'Query parameter q is required' });
+
+    const claudePrompt = `You are a pharmacist. For the medicine: ${q}, return ONLY a JSON object with fields: name, manufacturer, dosage, usage, warnings, adverse_reactions, contraindications, drug_interactions, generic_alternatives (array of 3 strings with INR price), food_interactions (array of 5 strings), confidence (number 0-1). No markdown.`;
+
+    let medicineData = {};
+    try {
+      const claudeRes = await axios.post(
+        'https://api.anthropic.com/v1/messages',
+        { model: 'claude-sonnet-4-20250514', max_tokens: 1500, messages: [{ role: 'user', content: claudePrompt }] },
+        { headers: { 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' } }
+      );
+      medicineData = JSON.parse(claudeRes.data.content[0].text.replace(/```json/gi, '').replace(/```/g, '').trim());
+    } catch (claudeErr) {
+      console.error('Search Claude call failed:', claudeErr.message);
+      return res.status(500).json({ error: 'Failed to fetch medicine information' });
+    }
+
+    let data_source = 'ai';
+    try {
+      const fdaUrl = `https://api.fda.gov/drug/label.json?search=openfda.brand_name:"${encodeURIComponent(q)}"&limit=1`;
+      const fdaResponse = await axios.get(fdaUrl);
+      if (fdaResponse.data.results && fdaResponse.data.results.length > 0) {
+        const label = fdaResponse.data.results[0];
+        const fw = (label.warnings          && label.warnings[0])          || '';
+        const fa = (label.adverse_reactions && label.adverse_reactions[0]) || '';
+        const fc = (label.contraindications && label.contraindications[0]) || '';
+        const fd = (label.drug_interactions && label.drug_interactions[0]) || '';
+        if (fw || fa || fc || fd) {
+          medicineData.warnings          = fw || medicineData.warnings          || '';
+          medicineData.adverse_reactions = fa || medicineData.adverse_reactions || '';
+          medicineData.contraindications = fc || medicineData.contraindications || '';
+          medicineData.drug_interactions = fd || medicineData.drug_interactions || '';
+          data_source = 'fda';
+        }
+      }
+    } catch (_) {}
+
+    const generic_alternatives = Array.isArray(medicineData.generic_alternatives) ? medicineData.generic_alternatives : [];
+    const food_interactions    = Array.isArray(medicineData.food_interactions)    ? medicineData.food_interactions    : [];
+
+    try {
+      insertScan.run(
+        medicineData.name || q, medicineData.manufacturer || '', medicineData.dosage || '',
+        medicineData.usage || '', JSON.stringify([]), JSON.stringify([]),
+        JSON.stringify(generic_alternatives), JSON.stringify(food_interactions), null, ''
+      );
+    } catch (_) {}
+
+    const confidenceRaw = medicineData.confidence;
+    const confidenceStr = typeof confidenceRaw === 'number'
+      ? `${Math.round(confidenceRaw * 100)}%`
+      : (confidenceRaw || '');
+
+    return res.json({
+      name:             medicineData.name         || q,
+      manufacturer:     medicineData.manufacturer || '',
+      dosage:           medicineData.dosage        || '',
+      usage:            medicineData.usage         || '',
+      confidence:       confidenceStr,
+      expiry_date:      '',
+      data_source,
+      warnings:         medicineData.warnings          || '',
+      adverse_reactions:medicineData.adverse_reactions || '',
+      contraindications:medicineData.contraindications || '',
+      drug_interactions:medicineData.drug_interactions || '',
+      condition_flags:  [],
+      generic_alternatives,
+      food_interactions,
+      disclaimer: 'This is general medicine information only and not medical advice. Consult a doctor or pharmacist before making any health decisions.',
+    });
+  } catch (err) {
+    console.error('Error in /api/search:', err.message);
+    return res.status(500).json({ error: 'Failed to search medicine', details: err.message });
+  }
+});
+
+// ── Medicine chatbot ──
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { message, medicine_context, chat_history } = req.body || {};
+    if (!message) return res.status(400).json({ error: 'message is required' });
+
+    const contextStr = medicine_context ? JSON.stringify(medicine_context) : '{}';
+    const systemPrompt = `You are Pill Pal, a friendly medicine information assistant. You have information about this medicine: ${contextStr}. Answer the user's question in plain, simple English. Be accurate, calm, and helpful. Never provide clinical advice or dosage recommendations. Always end responses that touch on safety with: 'Please consult your doctor or pharmacist for personal medical advice.' Keep responses under 100 words.`;
+
+    const messages = [
+      ...(Array.isArray(chat_history) ? chat_history : []),
+      { role: 'user', content: message },
+    ];
+
+    const claudeResponse = await axios.post(
+      'https://api.anthropic.com/v1/messages',
+      { model: 'claude-sonnet-4-20250514', max_tokens: 300, system: systemPrompt, messages },
+      { headers: { 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' } }
+    );
+
+    return res.json({ reply: claudeResponse.data.content[0].text });
+  } catch (err) {
+    console.error('Error in /api/chat:', err.message);
+    return res.status(500).json({ error: 'Failed to get response', details: err.message });
+  }
+});
+
 app.get('/api/expiry-alerts', (req, res) => {
   try {
     const scans = selectScansWithExpiry.all();
