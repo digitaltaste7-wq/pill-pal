@@ -259,13 +259,6 @@ app.post('/api/analyze', authenticateAPIKey, authenticateUser, upload.single('me
       return res.status(400).json({ error: 'No image uploaded' });
     }
 
-    // Scan limit check for authenticated free users
-    if (req.user) {
-      const freshUser = findUserById.get(req.user.id);
-      if (freshUser && freshUser.plan === 'free' && freshUser.scans_used >= freshUser.scans_limit) {
-        return res.status(429).json({ error: 'Free scan limit reached', scans_used: freshUser.scans_used, scans_limit: freshUser.scans_limit });
-      }
-    }
 
     const base64Image = req.file.buffer.toString('base64');
     const mimeType = req.file.mimetype;

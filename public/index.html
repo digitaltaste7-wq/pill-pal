@@ -1290,24 +1290,7 @@
     #logout-btn { padding: 5px 12px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 7px; font-family: inherit; font-size: 0.75rem; font-weight: 600; color: #64748b; cursor: pointer; transition: background .15s; }
     #logout-btn:hover { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
 
-    /* ── Scan Limit Banner ── */
-    #scan-limit-banner {
-      display: none;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 16px;
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      border-radius: 12px;
-      font-size: 0.82rem;
-      color: #1e40af;
-      font-weight: 500;
-    }
-    #scan-limit-banner.visible { display: flex; }
-    #scan-limit-banner a { color: #1d4ed8; font-weight: 700; text-decoration: none; margin-left: auto; white-space: nowrap; }
-    #scan-limit-banner a:hover { text-decoration: underline; }
-
-    /* ── Install Banner ── */
+/* ── Install Banner ── */
     #install-banner {
       display: none;
       align-items: center;
@@ -1478,13 +1461,6 @@
   </header>
 
   <main>
-
-    <!-- Scan limit banner (shown for free users) -->
-    <div id="scan-limit-banner" role="status">
-      <span>💊</span>
-      <span id="scan-limit-text">You have 5/5 free scans remaining.</span>
-      <a href="/pricing.html">Upgrade for unlimited →</a>
-    </div>
 
     <!-- ══ SCAN TAB ══ -->
     <div id="scan-panel">
@@ -3213,9 +3189,6 @@
       const userBar  = document.getElementById('auth-bar-user');
       const logoutBtn = document.getElementById('logout-btn');
       const userNameEl = document.getElementById('auth-user-name');
-      const scanBanner = document.getElementById('scan-limit-banner');
-      const scanText   = document.getElementById('scan-limit-text');
-
       if (!token) {
         guestBar.style.display = '';
         return;
@@ -3229,16 +3202,6 @@
         userBar.style.display = '';
         logoutBtn.style.display = '';
         userNameEl.textContent = user.name;
-
-        // Show scan limit for free users
-        if (user.plan === 'free') {
-          const remaining = Math.max(0, user.scans_limit - user.scans_used);
-          scanText.textContent = `You have ${remaining}/${user.scans_limit} free scans remaining.`;
-          scanBanner.classList.add('visible');
-          if (remaining === 0) {
-            scanText.textContent = '🚫 Free scan limit reached.';
-          }
-        }
       } catch (_) {
         localStorage.removeItem('pp_token');
         localStorage.removeItem('pp_user');
