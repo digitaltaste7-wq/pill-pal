@@ -1271,6 +1271,100 @@
     .activity-name { font-weight: 600; font-size: 0.875rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .activity-meta { font-size: 0.75rem; color: #94a3b8; margin-top: 2px; }
 
+    /* ── Credible Sources ── */
+    .sources-section { margin-top: 8px; }
+    .sources-section-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: #94a3b8;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sources-gov-note {
+      font-size: 0.65rem;
+      color: #64748b;
+      font-weight: 400;
+      font-style: italic;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    .source-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .source-card.unavailable { opacity: .55; }
+    .source-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      cursor: pointer;
+      background: #f8fafc;
+      user-select: none;
+      gap: 8px;
+    }
+    .source-card.unavailable .source-card-header { cursor: default; }
+    .source-card-header-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .source-badge {
+      font-size: 0.62rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .source-badge.gov { background: #dcfce7; color: #166534; }
+    .source-badge.unavailable { background: #f1f5f9; color: #94a3b8; }
+    .source-name {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #334155;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .source-chevron {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      flex-shrink: 0;
+      transition: transform .2s;
+    }
+    .source-card.open .source-chevron { transform: rotate(180deg); }
+    .source-card-body {
+      display: none;
+      padding: 12px 14px;
+      font-size: 0.82rem;
+      color: #475569;
+      line-height: 1.65;
+      border-top: 1px solid #e2e8f0;
+      background: #fff;
+    }
+    .source-card.open .source-card-body { display: block; }
+    .source-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 10px;
+      font-size: 0.72rem;
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .source-link:hover { text-decoration: underline; }
+    .sources-disclaimer {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      font-style: italic;
+      margin-top: 10px;
+      text-align: center;
+    }
+
     /* ── Auth Bar ── */
     .auth-bar {
       display: flex;
@@ -1595,9 +1689,13 @@
 
           <div id="res-data-source-wrap"></div>
 
-          <div class="section-block">
-            <div class="section-label">Side Effects</div>
-            <div class="section-text" id="res-adverse"></div>
+          <div class="sources-section" id="credible-sources-section">
+            <div class="sources-section-label">
+              Side Effects From Credible Sources
+              <span class="sources-gov-note">US government &amp; official medical databases only</span>
+            </div>
+            <div id="credible-sources-list"></div>
+            <p class="sources-disclaimer">Data sourced from US government and official medical databases only</p>
           </div>
 
           <div class="section-block" style="margin-top:16px;">
@@ -2992,8 +3090,57 @@
         ? `<span class="data-source-badge fda">🔵 FDA Data</span>`
         : `<span class="data-source-badge ai">🟠 AI-sourced Data</span>`;
 
-      setText('res-adverse',  data.adverse_reactions, 'No adverse reaction data available.');
-      setText('res-warnings', data.warnings,          'No warning data available.');
+      // ── Credible sources renderer ──
+      (function renderCredibleSources(sources) {
+        const list = document.getElementById('credible-sources-list');
+        list.innerHTML = '';
+        if (!Array.isArray(sources) || sources.length === 0) {
+          // Fallback: show plain adverse_reactions if no credible_sources in response
+          const fallback = document.createElement('div');
+          fallback.className = 'section-text';
+          fallback.textContent = data.adverse_reactions || 'No adverse reaction data available.';
+          list.appendChild(fallback);
+          return;
+        }
+        sources.forEach(src => {
+          const card = document.createElement('div');
+          card.className = 'source-card' + (src.available ? '' : ' unavailable');
+
+          const header = document.createElement('div');
+          header.className = 'source-card-header';
+          header.innerHTML = `
+            <div class="source-card-header-left">
+              <span class="source-badge gov">${src.available ? '✓ Gov' : '—'}</span>
+              <span class="source-name">${src.source}</span>
+            </div>
+            ${src.available ? '<span class="source-chevron">▼</span>' : ''}
+          `;
+
+          const body = document.createElement('div');
+          body.className = 'source-card-body';
+          if (src.available) {
+            body.innerHTML = `
+              <p>${src.data}</p>
+              <a class="source-link" href="${src.url}" target="_blank" rel="noopener">
+                ↗ Source: ${src.label}
+              </a>
+            `;
+            header.addEventListener('click', () => card.classList.toggle('open'));
+          } else {
+            header.style.cursor = 'default';
+            header.querySelector('.source-card-header-left').innerHTML = `
+              <span class="source-badge unavailable">—</span>
+              <span class="source-name" style="color:#94a3b8;">No data from ${src.source}</span>
+            `;
+          }
+
+          card.appendChild(header);
+          card.appendChild(body);
+          list.appendChild(card);
+        });
+      })(data.credible_sources);
+
+      setText('res-warnings', data.warnings, 'No warning data available.');
 
       const genericsEl = document.getElementById('res-generics');
       genericsEl.innerHTML = '';

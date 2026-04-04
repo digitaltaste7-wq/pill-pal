@@ -141,6 +141,74 @@ const CONDITION_KEYWORDS = {
   kidney:   { label: 'Kidney',              keywords: ['renal', 'kidney', 'creatinine', 'nephro', 'dialysis'] },
 };
 
+// ── Credible source side-effect fetcher ──
+async function fetchCredibleSources(medicineName) {
+  let dailymed_data = '';
+  let medlineplus_data = '';
+
+  // DailyMed
+  try {
+    const splsRes = await axios.get(
+      `https://dailymed.nlm.nih.gov/dailymed/services/v2/spls.json?drug_name=${encodeURIComponent(medicineName)}&pagesize=1`,
+      { timeout: 6000 }
+    );
+    const results = splsRes.data && splsRes.data.data;
+    if (results && results.length > 0) {
+      const setid = results[0].setid;
+      const detailRes = await axios.get(
+        `https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/${setid}.json`,
+        { timeout: 6000 }
+      );
+      const sections = detailRes.data && detailRes.data.data && detailRes.data.data.sections;
+      if (Array.isArray(sections)) {
+        const adverseSection = sections.find(s =>
+          s.title && s.title.toLowerCase().includes('adverse')
+        );
+        if (adverseSection && adverseSection.text) {
+          dailymed_data = String(adverseSection.text).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 1000);
+        }
+      }
+    }
+  } catch (_) {}
+
+  // MedlinePlus Connect
+  try {
+    const mlRes = await axios.get(
+      `https://connect.medlineplus.gov/service?mainSearchCriteria.v.cs=2.16.840.1.113883.6.88&mainSearchCriteria.v.dn=${encodeURIComponent(medicineName)}&knowledgeResponseType=application/json`,
+      { timeout: 6000 }
+    );
+    const entry = mlRes.data && mlRes.data.feed && mlRes.data.feed.entry;
+    if (Array.isArray(entry) && entry.length > 0 && entry[0].summary) {
+      const raw = entry[0].summary._value || entry[0].summary;
+      medlineplus_data = String(raw).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 500);
+    }
+  } catch (_) {}
+
+  return [
+    {
+      source:    'OpenFDA',
+      label:     'FDA Adverse Event Database',
+      url:       'https://www.fda.gov',
+      data:      '', // filled in by caller after OpenFDA block
+      available: false,
+    },
+    {
+      source:    'DailyMed',
+      label:     'DailyMed — FDA Official Drug Labels',
+      url:       'https://dailymed.nlm.nih.gov',
+      data:      dailymed_data,
+      available: dailymed_data.length > 0,
+    },
+    {
+      source:    'MedlinePlus',
+      label:     'MedlinePlus — US National Library of Medicine',
+      url:       'https://medlineplus.gov',
+      data:      medlineplus_data,
+      available: medlineplus_data.length > 0,
+    },
+  ];
+}
+
 function checkConditionFlags(openfdaData, conditions) {
   const searchText = `${openfdaData.warnings} ${openfdaData.adverse_reactions}`.toLowerCase();
   return conditions.map((condition) => {
@@ -414,6 +482,11 @@ No markdown, no explanation, only the JSON object.`;
 
     const condition_flags = checkConditionFlags({ warnings, adverse_reactions }, conditions);
 
+    // ── Credible sources (DailyMed + MedlinePlus) ──
+    const credible_sources = await fetchCredibleSources(medicineData.name || '');
+    credible_sources[0].data      = adverse_reactions;
+    credible_sources[0].available = adverse_reactions.length > 0;
+
     // ── Persist to SQLite ──
     let profile_id = null;
     if (req.body.profile_id && req.body.profile_id !== 'null') {
@@ -455,6 +528,7 @@ No markdown, no explanation, only the JSON object.`;
       condition_flags,
       generic_alternatives,
       food_interactions,
+      credible_sources,
       disclaimer: 'This is general medicine information only and not medical advice. Consult a doctor or pharmacist before making any health decisions.',
     });
   } catch (err) {
@@ -843,11 +917,17 @@ app.get('/api/search', async (req, res) => {
     const generic_alternatives = Array.isArray(medicineData.generic_alternatives) ? medicineData.generic_alternatives : [];
     const food_interactions    = Array.isArray(medicineData.food_interactions)    ? medicineData.food_interactions    : [];
 
+    // ── Credible sources (DailyMed + MedlinePlus) ──
+    const credible_sources = await fetchCredibleSources(q);
+    const adverse_reactions_str = medicineData.adverse_reactions || '';
+    credible_sources[0].data      = adverse_reactions_str;
+    credible_sources[0].available = adverse_reactions_str.length > 0;
+
     try {
       insertScan.run(
         medicineData.name || q, medicineData.manufacturer || '', medicineData.dosage || '',
         medicineData.usage || '', JSON.stringify([]), JSON.stringify([]),
-        JSON.stringify(generic_alternatives), JSON.stringify(food_interactions), null, ''
+        JSON.stringify(generic_alternatives), JSON.stringify(food_interactions), null, '', null
       );
     } catch (_) {}
 
@@ -865,12 +945,13 @@ app.get('/api/search', async (req, res) => {
       expiry_date:      '',
       data_source,
       warnings:         medicineData.warnings          || '',
-      adverse_reactions:medicineData.adverse_reactions || '',
+      adverse_reactions:adverse_reactions_str,
       contraindications:medicineData.contraindications || '',
       drug_interactions:medicineData.drug_interactions || '',
       condition_flags:  [],
       generic_alternatives,
       food_interactions,
+      credible_sources,
       disclaimer: 'This is general medicine information only and not medical advice. Consult a doctor or pharmacist before making any health decisions.',
     });
   } catch (err) {
