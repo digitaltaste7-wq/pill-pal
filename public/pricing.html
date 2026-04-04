@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing – Pill Pal AI Medicine Intelligence</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:     #1e3a5f;
+      --navy-dk:  #162d4a;
+      --blue:     #2563eb;
+      --blue-lt:  #eff6ff;
+      --blue-md:  #dbeafe;
+      --text:     #0f172a;
+      --muted:    #475569;
+      --muted-lt: #64748b;
+      --border:   #e2e8f0;
+      --surface:  #f8fafc;
+      --white:    #ffffff;
+      --green:    #059669;
+      --green-lt: #f0fdf4;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.6; background: var(--white); }
+
+    /* ── Nav ── */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255,255,255,.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+    }
+    .nav-logo { font-size: 1.05rem; font-weight: 700; color: var(--blue); text-decoration: none; }
+    .nav-links { display: flex; align-items: center; gap: 24px; }
+    .nav-links a { font-size: 0.85rem; font-weight: 500; color: var(--muted); text-decoration: none; transition: color .15s; }
+    .nav-links a:hover { color: var(--navy); }
+    .nav-links a.active { color: var(--navy); font-weight: 700; }
+    .nav-cta {
+      padding: 8px 18px;
+      background: var(--navy);
+      color: var(--white);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background .15s;
+    }
+    .nav-cta:hover { background: var(--navy-dk); color: var(--white); }
+
+    /* ── Hero ── */
+    .pricing-hero {
+      background: linear-gradient(135deg, var(--navy) 0%, #1a4f8a 60%, #1e5ba8 100%);
+      padding: 80px 32px 70px;
+      text-align: center;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #93c5fd;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 20px;
+    }
+    .pricing-hero h1 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: var(--white);
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: 14px;
+    }
+    .pricing-hero-sub {
+      font-size: 1.1rem;
+      color: #bfdbfe;
+      margin-bottom: 0;
+      font-weight: 400;
+    }
+
+    /* ── Main section ── */
+    .pricing-main {
+      background: var(--surface);
+      padding: 64px 32px 80px;
+    }
+    .container { max-width: 1080px; margin: 0 auto; }
+
+    /* ── Pricing grid ── */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      align-items: start;
+      margin-bottom: 32px;
+    }
+    .pricing-card {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 28px;
+      transition: box-shadow .2s;
+      position: relative;
+    }
+    .pricing-card:hover { box-shadow: 0 8px 24px rgba(30,58,95,.1); }
+    .pricing-card.featured {
+      border-color: var(--navy);
+      box-shadow: 0 4px 20px rgba(30,58,95,.15);
+    }
+    .featured-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--navy);
+      color: var(--white);
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      padding: 4px 14px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .plan-name {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted-lt);
+      margin-bottom: 10px;
+    }
+    .plan-price {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+    .plan-price span { font-size: 1rem; font-weight: 500; color: var(--muted-lt); }
+    .plan-price-custom { font-size: 1.6rem; font-weight: 800; color: var(--navy); }
+    .plan-desc { font-size: 0.85rem; color: var(--muted); margin: 12px 0 20px; line-height: 1.6; }
+    .plan-trial {
+      display: inline-block;
+      padding: 4px 10px;
+      background: var(--green-lt);
+      color: var(--green);
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .plan-divider { height: 1px; background: var(--border); margin: 20px 0; }
+    .plan-features { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+    .plan-feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .plan-feature-check { color: var(--green); font-weight: 700; flex-shrink: 0; }
+    .plan-cta {
+      display: block;
+      text-align: center;
+      padding: 13px;
+      border-radius: 10px;
+      font-size: 0.925rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background .15s, transform .1s;
+    }
+    .plan-cta.outline {
+      border: 1.5px solid var(--navy);
+      color: var(--navy);
+      background: transparent;
+    }
+    .plan-cta.outline:hover { background: var(--navy); color: var(--white); }
+    .plan-cta.filled {
+      background: var(--navy);
+      color: var(--white);
+    }
+    .plan-cta.filled:hover { background: var(--navy-dk); transform: translateY(-1px); }
+
+    /* ── Trial note ── */
+    .trial-note {
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--muted-lt);
+      padding: 4px 0 48px;
+    }
+    .trial-note strong { color: var(--navy); }
+
+    /* ── FAQ ── */
+    .faq-section { background: var(--white); padding: 80px 32px; }
+    .section-header { margin-bottom: 40px; }
+    .section-header.centered { text-align: center; }
+    .section-eyebrow {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--blue);
+      margin-bottom: 10px;
+    }
+    .section-title {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    .section-sub { font-size: 1rem; color: var(--muted); max-width: 560px; margin: 0 auto; }
+
+    .faq-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .faq-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px 24px;
+    }
+    .faq-q {
+      font-size: 0.925rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .faq-a {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    /* ── CTA band ── */
+    .cta-band {
+      background: linear-gradient(135deg, var(--navy) 0%, #1a4f8a 100%);
+      padding: 64px 32px;
+      text-align: center;
+    }
+    .cta-band h2 {
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: var(--white);
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+    }
+    .cta-band p {
+      font-size: 1rem;
+      color: #bfdbfe;
+      margin-bottom: 32px;
+    }
+    .cta-band-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      padding: 14px 28px;
+      background: var(--white);
+      color: var(--navy);
+      border-radius: 10px;
+      font-size: 0.925rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background .15s, transform .1s;
+    }
+    .btn-primary:hover { background: var(--blue-md); transform: translateY(-1px); }
+    .btn-secondary {
+      padding: 14px 28px;
+      background: transparent;
+      border: 1.5px solid rgba(255,255,255,.45);
+      color: var(--white);
+      border-radius: 10px;
+      font-size: 0.925rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: border-color .15s, background .15s;
+    }
+    .btn-secondary:hover { border-color: var(--white); background: rgba(255,255,255,.08); }
+
+    /* ── Footer ── */
+    .page-footer {
+      background: var(--navy);
+      color: #94a3b8;
+      padding: 40px 32px;
+    }
+    .footer-inner {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .footer-logo { font-size: 1rem; font-weight: 700; color: var(--white); }
+    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+    .footer-links a { color: #94a3b8; text-decoration: none; font-size: 0.82rem; transition: color .15s; }
+    .footer-links a:hover { color: var(--white); }
+    .footer-copy { font-size: 0.78rem; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .pricing-grid { grid-template-columns: 1fr; max-width: 480px; margin-left: auto; margin-right: auto; }
+      .faq-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .pricing-hero { padding: 60px 20px 50px; }
+      .pricing-hero h1 { font-size: 2rem; }
+      .pricing-hero-sub { font-size: 0.95rem; }
+      .pricing-main { padding: 48px 20px 60px; }
+      .faq-section { padding: 60px 20px; }
+      .cta-band { padding: 48px 20px; }
+      .cta-band h2 { font-size: 1.5rem; }
+      .top-nav { padding: 0 16px; }
+      .nav-links { display: none; }
+      .section-title { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Nav ── -->
+  <nav class="top-nav">
+    <a class="nav-logo" href="/">💊 Pill Pal</a>
+    <div class="nav-links">
+      <a href="/us-healthcare.html">For Healthcare</a>
+      <a href="/api-docs.html">API Docs</a>
+      <a href="/pricing.html" class="active">Pricing</a>
+      <a class="nav-cta" href="mailto:sales@pillpal.app">Request a Demo</a>
+    </div>
+  </nav>
+
+  <!-- ── Hero ── -->
+  <section class="pricing-hero">
+    <div class="container">
+      <div class="hero-eyebrow">💳 Pricing</div>
+      <h1>Simple, Transparent Pricing</h1>
+      <p class="pricing-hero-sub">Start free. Scale as you grow. Cancel anytime.</p>
+    </div>
+  </section>
+
+  <!-- ── Pricing Cards ── -->
+  <section class="pricing-main">
+    <div class="container">
+      <div class="pricing-grid">
+
+        <!-- Starter -->
+        <div class="pricing-card">
+          <div class="plan-name">Starter</div>
+          <div class="plan-price">$299<span>/month</span></div>
+          <p class="plan-desc">Perfect for small apps and early-stage healthcare startups getting started with AI medicine intelligence.</p>
+          <span class="plan-trial">✓ 30-day free trial</span>
+          <div class="plan-divider"></div>
+          <div class="plan-features">
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>500 medicine scans / month</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Medicine identification + FDA data</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Drug interaction checker</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Email support</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>API access</span></div>
+          </div>
+          <a class="plan-cta outline" href="mailto:sales@pillpal.app?subject=Starter Plan – Free Trial">Start Free Trial</a>
+        </div>
+
+        <!-- Growth -->
+        <div class="pricing-card featured">
+          <div class="featured-badge">Most Popular</div>
+          <div class="plan-name">Growth</div>
+          <div class="plan-price">$799<span>/month</span></div>
+          <p class="plan-desc">For growing healthcare platforms that need condition flagging, prescription scanning, and family profiles.</p>
+          <span class="plan-trial">✓ 30-day free trial</span>
+          <div class="plan-divider"></div>
+          <div class="plan-features">
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>2,000 medicine scans / month</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Everything in Starter</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Condition-aware side effect flagging</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Prescription scanner</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Family profiles API</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Priority support</span></div>
+          </div>
+          <a class="plan-cta filled" href="mailto:sales@pillpal.app?subject=Growth Plan – Free Trial">Start Free Trial</a>
+        </div>
+
+        <!-- Enterprise -->
+        <div class="pricing-card">
+          <div class="plan-name">Enterprise</div>
+          <div class="plan-price-custom">Custom Pricing</div>
+          <p class="plan-desc">For hospital systems, pharmacy chains, and Medicare platforms requiring white-label, BAA, and dedicated support.</p>
+          <span class="plan-trial">✓ 30-day free trial</span>
+          <div class="plan-divider"></div>
+          <div class="plan-features">
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Unlimited scans</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Everything in Growth</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>White-label option</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>BAA agreement included</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Dedicated account manager</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>Custom integrations</span></div>
+            <div class="plan-feature"><span class="plan-feature-check">✓</span><span>SLA guarantee</span></div>
+          </div>
+          <a class="plan-cta outline" href="mailto:sales@pillpal.app?subject=Enterprise Plan">Contact Us</a>
+        </div>
+
+      </div>
+
+      <p class="trial-note">
+        <strong>All plans include a 30-day free trial.</strong> No credit card required.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── FAQ ── -->
+  <section class="faq-section">
+    <div class="container">
+      <div class="section-header centered">
+        <div class="section-eyebrow">FAQ</div>
+        <div class="section-title">Common Questions</div>
+        <p class="section-sub">Everything you need to know before getting started.</p>
+      </div>
+
+      <div class="faq-grid">
+        <div class="faq-item">
+          <div class="faq-q">Can I change plans later?</div>
+          <div class="faq-a">Yes, upgrade or downgrade anytime. Changes take effect at the start of your next billing cycle with no penalties.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">Is there a free trial?</div>
+          <div class="faq-a">Yes, all plans include a 30-day free trial. No credit card required to start — just email us and we'll get you set up.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">Do you offer a BAA?</div>
+          <div class="faq-a">Yes, a Business Associate Agreement (BAA) is included with the Enterprise plan to support your HIPAA compliance obligations.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">How long does integration take?</div>
+          <div class="faq-a">Less than one day. Our REST API is well-documented and most teams are live in a few hours. See our <a href="/api-docs.html" style="color:var(--blue);text-decoration:none;font-weight:600;">API Docs</a>.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">What drug database do you use?</div>
+          <div class="faq-a">We use the FDA-verified OpenFDA database for US medicines, with an AI fallback for Indian and international medicines not yet in the FDA dataset.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">What if I exceed my scan limit?</div>
+          <div class="faq-a">We'll notify you as you approach your limit. You can upgrade instantly or purchase additional scans. We won't cut you off without warning.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA Band ── -->
+  <section class="cta-band">
+    <div class="container">
+      <h2>Ready to get started?</h2>
+      <p>Join healthcare teams using Pill Pal to give patients better medicine intelligence.</p>
+      <div class="cta-band-btns">
+        <a class="btn-primary" href="mailto:sales@pillpal.app?subject=Free Trial">📅 Start Free Trial</a>
+        <a class="btn-secondary" href="/api-docs.html">View API Docs →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ── -->
+  <footer class="page-footer">
+    <div class="footer-inner">
+      <span class="footer-logo">💊 Pill Pal</span>
+      <div class="footer-links">
+        <a href="/pricing.html">Pricing</a>
+        <a href="/privacy.html">Privacy Policy</a>
+        <a href="/hipaa.html">HIPAA Compliance</a>
+        <a href="/api-docs.html">API Docs</a>
+        <a href="mailto:sales@pillpal.app">sales@pillpal.app</a>
+      </div>
+      <span class="footer-copy">© 2026 Pill Pal. For informational use only.</span>
+    </div>
+  </footer>
+
+</body>
+</html>
