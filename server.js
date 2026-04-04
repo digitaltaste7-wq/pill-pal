@@ -6,6 +6,9 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { DatabaseSync } = require('node:sqlite');
+const bcrypt = require('bcryptjs');
+const jwt    = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET || 'pillpal-secret-2024';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,6 +33,22 @@ try { db.exec(`ALTER TABLE scans ADD COLUMN generic_alternatives TEXT DEFAULT '[
 try { db.exec(`ALTER TABLE scans ADD COLUMN food_interactions TEXT DEFAULT '[]'`); } catch (_) {}
 try { db.exec(`ALTER TABLE scans ADD COLUMN profile_id INTEGER`); } catch (_) {}
 try { db.exec(`ALTER TABLE scans ADD COLUMN expiry_date TEXT DEFAULT ''`); } catch (_) {}
+try { db.exec(`ALTER TABLE scans ADD COLUMN user_id INTEGER`); } catch (_) {}
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS users (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    name          TEXT NOT NULL,
+    email         TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    plan          TEXT DEFAULT 'free',
+    scans_used    INTEGER DEFAULT 0,
+    scans_limit   INTEGER DEFAULT 5,
+    created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+try { db.exec(`ALTER TABLE reminders ADD COLUMN user_id INTEGER`); } catch (_) {}
+try { db.exec(`ALTER TABLE profiles ADD COLUMN user_id INTEGER`); } catch (_) {}
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS profiles (
@@ -41,7 +60,7 @@ db.exec(`
   )
 `);
 
-const insertScan           = db.prepare(`INSERT INTO scans (medicine_name, manufacturer, dosage, usage, conditions, condition_flags, generic_alternatives, food_interactions, profile_id, expiry_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+const insertScan           = db.prepare(`INSERT INTO scans (medicine_name, manufacturer, dosage, usage, conditions, condition_flags, generic_alternatives, food_interactions, profile_id, expiry_date, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
 const selectAllScans       = db.prepare(`SELECT * FROM scans ORDER BY scanned_at DESC LIMIT 20`);
 const selectScansWithExpiry = db.prepare(`SELECT * FROM scans WHERE expiry_date IS NOT NULL AND expiry_date != '' ORDER BY scanned_at DESC`);
 const selectScansByProfile = db.prepare(`SELECT * FROM scans WHERE profile_id = ? ORDER BY scanned_at DESC LIMIT 20`);
@@ -96,6 +115,11 @@ const selectRemindersByProfile = db.prepare(`SELECT * FROM reminders WHERE profi
 const selectRemindersNull      = db.prepare(`SELECT * FROM reminders WHERE profile_id IS NULL AND active = 1 ORDER BY created_at DESC`);
 const selectAllReminders       = db.prepare(`SELECT * FROM reminders WHERE active = 1 ORDER BY created_at DESC`);
 const deactivateReminder       = db.prepare(`UPDATE reminders SET active = 0 WHERE id = ?`);
+
+const findUserByEmail      = db.prepare(`SELECT * FROM users WHERE email = ?`);
+const findUserById         = db.prepare(`SELECT * FROM users WHERE id = ?`);
+const insertUser           = db.prepare(`INSERT INTO users (name, email, password_hash, plan, scans_used, scans_limit) VALUES (?, ?, ?, ?, ?, ?)`);
+const incrementUserScans   = db.prepare(`UPDATE users SET scans_used = scans_used + 1 WHERE id = ?`);
 
 const findApiKey       = db.prepare(`SELECT * FROM api_keys WHERE api_key = ? AND active = 1`);
 const incrementUsage   = db.prepare(`UPDATE api_keys SET usage_count = usage_count + 1 WHERE api_key = ?`);
@@ -161,15 +185,86 @@ function requireAdminSecret(req, res, next) {
   next();
 }
 
+// ── User JWT middleware (optional auth — allows guests through) ──
+function authenticateUser(req, res, next) {
+  const auth = req.headers['authorization'];
+  if (!auth || !auth.startsWith('Bearer ')) {
+    req.user = null;
+    return next();
+  }
+  try {
+    req.user = jwt.verify(auth.slice(7), JWT_SECRET);
+  } catch (_) {
+    req.user = null;
+  }
+  next();
+}
+
 // ── Routes ──
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.post('/api/analyze', authenticateAPIKey, upload.single('medicine'), async (req, res) => {
+// ── Auth routes ──
+function makeToken(user) {
+  return jwt.sign({ id: user.id, email: user.email, name: user.name, plan: user.plan }, JWT_SECRET, { expiresIn: '30d' });
+}
+function safeUser(user) {
+  const { password_hash, ...rest } = user;
+  return rest;
+}
+
+app.post('/api/auth/signup', (req, res) => {
+  try {
+    const { name, email, password } = req.body || {};
+    if (!name || !email || !password) return res.status(400).json({ error: 'name, email, and password are required' });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Invalid email format' });
+    if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    if (findUserByEmail.get(email)) return res.status(409).json({ error: 'Email already registered' });
+    const hash = bcrypt.hashSync(password, 10);
+    const result = insertUser.run(name, email, hash, 'free', 0, 5);
+    const user = findUserById.get(Number(result.lastInsertRowid));
+    return res.status(201).json({ token: makeToken(user), user: safeUser(user) });
+  } catch (err) {
+    console.error('Signup error:', err.message);
+    return res.status(500).json({ error: 'Signup failed', details: err.message });
+  }
+});
+
+app.post('/api/auth/login', (req, res) => {
+  try {
+    const { email, password } = req.body || {};
+    if (!email || !password) return res.status(400).json({ error: 'email and password are required' });
+    const user = findUserByEmail.get(email);
+    if (!user || !bcrypt.compareSync(password, user.password_hash)) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+    return res.json({ token: makeToken(user), user: safeUser(user) });
+  } catch (err) {
+    console.error('Login error:', err.message);
+    return res.status(500).json({ error: 'Login failed', details: err.message });
+  }
+});
+
+app.get('/api/auth/me', authenticateUser, (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Not authenticated' });
+  const user = findUserById.get(req.user.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  return res.json(safeUser(user));
+});
+
+app.post('/api/analyze', authenticateAPIKey, authenticateUser, upload.single('medicine'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No image uploaded' });
+    }
+
+    // Scan limit check for authenticated free users
+    if (req.user) {
+      const freshUser = findUserById.get(req.user.id);
+      if (freshUser && freshUser.plan === 'free' && freshUser.scans_used >= freshUser.scans_limit) {
+        return res.status(429).json({ error: 'Free scan limit reached', scans_used: freshUser.scans_used, scans_limit: freshUser.scans_limit });
+      }
     }
 
     const base64Image = req.file.buffer.toString('base64');
@@ -333,6 +428,7 @@ No markdown, no explanation, only the JSON object.`;
     }
 
     try {
+      const uid = req.user ? req.user.id : null;
       insertScan.run(
         medicineData.name         || '',
         medicineData.manufacturer || '',
@@ -343,8 +439,10 @@ No markdown, no explanation, only the JSON object.`;
         JSON.stringify(generic_alternatives),
         JSON.stringify(food_interactions),
         profile_id,
-        medicineData.expiry_date  || ''
+        medicineData.expiry_date  || '',
+        uid
       );
+      if (req.user) incrementUserScans.run(req.user.id);
     } catch (dbErr) {
       console.error('DB insert error:', dbErr.message);
     }
@@ -372,16 +470,23 @@ No markdown, no explanation, only the JSON object.`;
   }
 });
 
-app.get('/api/history', (req, res) => {
+app.get('/api/history', authenticateUser, (req, res) => {
   try {
     const { profile_id } = req.query;
     let rows;
-    if (profile_id === undefined) {
-      rows = selectAllScans.all();
-    } else if (!profile_id || profile_id === 'null') {
-      rows = selectNullScans.all();
+    if (req.user) {
+      const uid = req.user.id;
+      if (profile_id === undefined) {
+        rows = db.prepare(`SELECT * FROM scans WHERE user_id = ? ORDER BY scanned_at DESC LIMIT 20`).all(uid);
+      } else if (!profile_id || profile_id === 'null') {
+        rows = db.prepare(`SELECT * FROM scans WHERE user_id = ? AND profile_id IS NULL ORDER BY scanned_at DESC LIMIT 20`).all(uid);
+      } else {
+        rows = db.prepare(`SELECT * FROM scans WHERE user_id = ? AND profile_id = ? ORDER BY scanned_at DESC LIMIT 20`).all(uid, parseInt(profile_id, 10));
+      }
     } else {
-      rows = selectScansByProfile.all(parseInt(profile_id, 10));
+      if (profile_id === undefined) rows = selectAllScans.all();
+      else if (!profile_id || profile_id === 'null') rows = selectNullScans.all();
+      else rows = selectScansByProfile.all(parseInt(profile_id, 10));
     }
     const scans = rows.map(row => ({
       ...row,
@@ -397,22 +502,27 @@ app.get('/api/history', (req, res) => {
   }
 });
 
-app.get('/api/profiles', (req, res) => {
+app.get('/api/profiles', authenticateUser, (req, res) => {
   try {
-    return res.json(selectProfiles.all());
+    const rows = req.user
+      ? db.prepare(`SELECT * FROM profiles WHERE user_id = ? ORDER BY created_at ASC`).all(req.user.id)
+      : selectProfiles.all();
+    return res.json(rows);
   } catch (err) {
     console.error('Error in /api/profiles:', err.message);
     return res.status(500).json({ error: 'Failed to fetch profiles', details: err.message });
   }
 });
 
-app.post('/api/profiles', (req, res) => {
+app.post('/api/profiles', authenticateUser, (req, res) => {
   try {
     const { name, relation, conditions } = req.body || {};
     if (!name || !relation) {
       return res.status(400).json({ error: 'name and relation are required' });
     }
-    const result = insertProfile.run(name, relation, JSON.stringify(conditions || []));
+    const uid = req.user ? req.user.id : null;
+    const result = db.prepare(`INSERT INTO profiles (name, relation, conditions, user_id) VALUES (?, ?, ?, ?)`)
+      .run(name, relation, JSON.stringify(conditions || []), uid);
     return res.json({ id: Number(result.lastInsertRowid), name, relation, conditions: conditions || [] });
   } catch (err) {
     console.error('Error in POST /api/profiles:', err.message);
@@ -528,14 +638,16 @@ app.get('/admin/usage', requireAdminSecret, (req, res) => {
 });
 
 // ── Reminder routes ──
-app.post('/api/reminders', (req, res) => {
+app.post('/api/reminders', authenticateUser, (req, res) => {
   try {
     const { profile_id, medicine_name, dosage, frequency, times, notes } = req.body || {};
     if (!medicine_name || !frequency || !times) {
       return res.status(400).json({ error: 'medicine_name, frequency, and times are required' });
     }
     const pid = (profile_id && profile_id !== 'null') ? parseInt(profile_id, 10) : null;
-    const result = insertReminder.run(pid, medicine_name, dosage || '', frequency, JSON.stringify(times), notes || '');
+    const uid = req.user ? req.user.id : null;
+    const result = db.prepare(`INSERT INTO reminders (profile_id, medicine_name, dosage, frequency, times, notes, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+      .run(pid, medicine_name, dosage || '', frequency, JSON.stringify(times), notes || '', uid);
     return res.status(201).json({
       id: Number(result.lastInsertRowid), profile_id: pid,
       medicine_name, dosage: dosage || '', frequency, times, notes: notes || '',
@@ -546,16 +658,23 @@ app.post('/api/reminders', (req, res) => {
   }
 });
 
-app.get('/api/reminders', (req, res) => {
+app.get('/api/reminders', authenticateUser, (req, res) => {
   try {
     const { profile_id } = req.query;
     let rows;
-    if (profile_id === undefined) {
-      rows = selectAllReminders.all();
-    } else if (!profile_id || profile_id === 'null') {
-      rows = selectRemindersNull.all();
+    if (req.user) {
+      const uid = req.user.id;
+      if (profile_id === undefined) {
+        rows = db.prepare(`SELECT * FROM reminders WHERE user_id = ? AND active = 1 ORDER BY created_at DESC`).all(uid);
+      } else if (!profile_id || profile_id === 'null') {
+        rows = db.prepare(`SELECT * FROM reminders WHERE user_id = ? AND profile_id IS NULL AND active = 1 ORDER BY created_at DESC`).all(uid);
+      } else {
+        rows = db.prepare(`SELECT * FROM reminders WHERE user_id = ? AND profile_id = ? AND active = 1 ORDER BY created_at DESC`).all(uid, parseInt(profile_id, 10));
+      }
     } else {
-      rows = selectRemindersByProfile.all(parseInt(profile_id, 10));
+      if (profile_id === undefined) rows = selectAllReminders.all();
+      else if (!profile_id || profile_id === 'null') rows = selectRemindersNull.all();
+      else rows = selectRemindersByProfile.all(parseInt(profile_id, 10));
     }
     return res.json(rows.map(r => ({ ...r, times: JSON.parse(r.times || '[]') })));
   } catch (err) {
@@ -631,7 +750,7 @@ app.post('/api/analyze-by-name', authenticateAPIKey, async (req, res) => {
     try {
       insertScan.run(medicine_name, '', '', '', JSON.stringify(conditions),
         JSON.stringify(condition_flags), JSON.stringify(generic_alternatives),
-        JSON.stringify(food_interactions), profile_id, '');
+        JSON.stringify(food_interactions), profile_id, '', null);
     } catch (_) {}
 
     return res.json({
@@ -828,6 +947,8 @@ app.get('/api/expiry-alerts', (req, res) => {
   }
 });
 
+app.get('/',    (req, res) => res.sendFile(path.join(__dirname, 'public', 'landing.html')));
+app.get('/app', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.listen(PORT, () => {

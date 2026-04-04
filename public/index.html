@@ -1271,6 +1271,42 @@
     .activity-name { font-weight: 600; font-size: 0.875rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .activity-meta { font-size: 0.75rem; color: #94a3b8; margin-top: 2px; }
 
+    /* ── Auth Bar ── */
+    .auth-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 680px;
+      gap: 10px;
+      margin-bottom: 4px;
+      min-height: 36px;
+    }
+    .auth-bar-guest { font-size: 0.8rem; color: #64748b; }
+    .auth-bar-guest a { color: #2563eb; font-weight: 600; text-decoration: none; }
+    .auth-bar-guest a:hover { text-decoration: underline; }
+    .auth-bar-user { display: flex; align-items: center; gap: 10px; }
+    .auth-user-name { font-size: 0.82rem; font-weight: 600; color: #1e293b; }
+    #logout-btn { padding: 5px 12px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 7px; font-family: inherit; font-size: 0.75rem; font-weight: 600; color: #64748b; cursor: pointer; transition: background .15s; }
+    #logout-btn:hover { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
+
+    /* ── Scan Limit Banner ── */
+    #scan-limit-banner {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      font-size: 0.82rem;
+      color: #1e40af;
+      font-weight: 500;
+    }
+    #scan-limit-banner.visible { display: flex; }
+    #scan-limit-banner a { color: #1d4ed8; font-weight: 700; text-decoration: none; margin-left: auto; white-space: nowrap; }
+    #scan-limit-banner a:hover { text-decoration: underline; }
+
     /* ── Install Banner ── */
     #install-banner {
       display: none;
@@ -1399,6 +1435,18 @@
     <h1>💊 Pill Pal</h1>
     <p>AI-powered medicine intelligence</p>
 
+    <!-- Auth bar -->
+    <div class="auth-bar">
+      <div class="auth-bar-guest" id="auth-bar-guest" style="display:none;">
+        <a href="/landing.html" id="auth-login-link">Login</a> / <a href="/landing.html" id="auth-signup-link">Sign up free</a>
+      </div>
+      <div class="auth-bar-user" id="auth-bar-user" style="display:none;">
+        <span>👤</span>
+        <span class="auth-user-name" id="auth-user-name"></span>
+      </div>
+      <button id="logout-btn" style="display:none;">Logout</button>
+    </div>
+
     <div class="profile-bar">
       <div class="profile-bar-left">
         <span class="profile-avatar-lg" id="active-avatar">🧑</span>
@@ -1430,6 +1478,13 @@
   </header>
 
   <main>
+
+    <!-- Scan limit banner (shown for free users) -->
+    <div id="scan-limit-banner" role="status">
+      <span>💊</span>
+      <span id="scan-limit-text">You have 5/5 free scans remaining.</span>
+      <a href="/pricing.html">Upgrade for unlimited →</a>
+    </div>
 
     <!-- ══ SCAN TAB ══ -->
     <div id="scan-panel">
@@ -3148,6 +3203,65 @@
     document.querySelectorAll('.chat-chip').forEach(chip => {
       chip.addEventListener('click', () => sendChatMessage(chip.textContent));
     });
+
+    /* ════════════════════════════════════════
+       Auth Init
+    ════════════════════════════════════════ */
+    (async function initAuth() {
+      const token = localStorage.getItem('pp_token');
+      const guestBar = document.getElementById('auth-bar-guest');
+      const userBar  = document.getElementById('auth-bar-user');
+      const logoutBtn = document.getElementById('logout-btn');
+      const userNameEl = document.getElementById('auth-user-name');
+      const scanBanner = document.getElementById('scan-limit-banner');
+      const scanText   = document.getElementById('scan-limit-text');
+
+      if (!token) {
+        guestBar.style.display = '';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (!res.ok) throw new Error('invalid');
+        const user = await res.json();
+
+        userBar.style.display = '';
+        logoutBtn.style.display = '';
+        userNameEl.textContent = user.name;
+
+        // Show scan limit for free users
+        if (user.plan === 'free') {
+          const remaining = Math.max(0, user.scans_limit - user.scans_used);
+          scanText.textContent = `You have ${remaining}/${user.scans_limit} free scans remaining.`;
+          scanBanner.classList.add('visible');
+          if (remaining === 0) {
+            scanText.textContent = '🚫 Free scan limit reached.';
+          }
+        }
+      } catch (_) {
+        localStorage.removeItem('pp_token');
+        localStorage.removeItem('pp_user');
+        guestBar.style.display = '';
+      }
+
+      logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('pp_token');
+        localStorage.removeItem('pp_user');
+        window.location.href = '/landing.html';
+      });
+
+      // Attach token to all fetch calls for the app
+      const _origFetch = window.fetch;
+      window.fetch = function(url, opts = {}) {
+        const t = localStorage.getItem('pp_token');
+        if (t && typeof url === 'string' && url.startsWith('/api/')) {
+          opts.headers = opts.headers || {};
+          opts.headers['Authorization'] = 'Bearer ' + t;
+        }
+        return _origFetch(url, opts);
+      };
+    })();
 
     /* ════════════════════════════════════════
        Service Worker Registration
