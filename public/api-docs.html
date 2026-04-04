@@ -441,48 +441,62 @@
       <h2>Rate Limits &amp; Plans</h2>
       <p>Usage is counted per API key, per calendar month. Limits reset on the 1st of each month. When your limit is exceeded, the API returns a <code>429</code> response.</p>
 
-      <table class="plans-table">
-        <thead>
-          <tr>
-            <th>Plan</th>
-            <th>Monthly Calls</th>
-            <th>Price</th>
-            <th>Analyze</th>
-            <th>Interactions</th>
-            <th>SLA</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><div class="plan-name">Starter</div></td>
-            <td>500 / mo</td>
-            <td><div class="plan-price">$49</div><div class="plan-sub">/month</div></td>
-            <td><span class="check">✓</span></td>
-            <td><span class="check">✓</span></td>
-            <td>Best effort</td>
-          </tr>
-          <tr>
-            <td><div class="plan-name">Growth</div></td>
-            <td>2,000 / mo</td>
-            <td><div class="plan-price">$149</div><div class="plan-sub">/month</div></td>
-            <td><span class="check">✓</span></td>
-            <td><span class="check">✓</span></td>
-            <td>99.5% uptime</td>
-          </tr>
-          <tr>
-            <td><div class="plan-name">Enterprise</div></td>
-            <td>10,000 / mo</td>
-            <td><div class="plan-price">Custom</div><div class="plan-sub">contact us</div></td>
-            <td><span class="check">✓</span></td>
-            <td><span class="check">✓</span></td>
-            <td>99.9% + dedicated support</td>
-          </tr>
-        </tbody>
-      </table>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin:24px 0;">
 
-      <div class="callout tip">
+        <!-- Basic -->
+        <div style="border:1.5px solid var(--border);border-radius:14px;padding:24px 20px;background:var(--bg);">
+          <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px;">Basic API</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--blue);letter-spacing:-1px;line-height:1;">$49<span style="font-size:0.9rem;font-weight:500;color:var(--muted);">/mo</span></div>
+          <div style="height:1px;background:var(--border);margin:16px 0;"></div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;font-size:0.82rem;color:var(--muted);">
+            <div><span style="color:#10b981;font-weight:700;">✓</span> &nbsp;100 API calls / month</div>
+            <div><span style="color:#10b981;font-weight:700;">✓</span> &nbsp;Medicine identification endpoint</div>
+            <div><span style="color:#10b981;font-weight:700;">✓</span> &nbsp;Drug interaction endpoint</div>
+            <div><span style="color:#10b981;font-weight:700;">✓</span> &nbsp;Email support</div>
+          </div>
+          <a href="mailto:api@pillpal.app?subject=Basic API Plan" style="display:block;text-align:center;padding:10px;border:1.5px solid var(--blue);color:var(--blue);border-radius:8px;font-size:0.85rem;font-weight:700;text-decoration:none;transition:background .15s;" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='transparent'">Get API Key</a>
+        </div>
+
+        <!-- Pro -->
+        <div style="border:1.5px solid var(--blue);border-radius:14px;padding:24px 20px;background:var(--bg);position:relative;box-shadow:0 4px 20px rgba(37,99,235,.12);">
+          <div style="position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:3px 12px;border-radius:999px;white-space:nowrap;">Most Popular</div>
+          <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px;">Pro API</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--blue);letter-spacing:-1px;line-height:1;">$149<span style="font-size:0.9rem;font-weight:500;color:var(--muted);">/mo</span></div>
+          <div style="height:1px;background:var(--border);margin:16px 0;"></div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;font-size:0.82rem;color:var(--muted);">
+            <div><span style="color:#10b981;font-weight:700;">✓</span> &nbsp;500 API calls / month</div>
+            <div><span style="color:#10b981;font-weight:700;">✓</span> &nbsp;All endpoints incl. prescription scanner</div>
+            <div><span style="color:#10b981;font-weight:700;">✓</span> &nbsp;Condition-aware side effect flagging</div>
+            <div><span style="color:#10b981;font-weight:700;">✓</span> &nbsp;Priority support</div>
+          </div>
+          <a href="mailto:api@pillpal.app?subject=Pro API Plan" style="display:block;text-align:center;padding:10px;background:var(--blue);color:#fff;border-radius:8px;font-size:0.85rem;font-weight:700;text-decoration:none;">Get API Key</a>
+        </div>
+
+        <!-- Enterprise -->
+        <div style="border:1.5px solid var(--border);border-radius:14px;padding:24px 20px;background:var(--bg);">
+          <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px;">Enterprise API</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--blue);letter-spacing:-1px;line-height:1;">$499<span style="font-size:0.9rem;font-weight:500;color:var(--muted);">/mo</span></div>
+          <div style="height:1px;background:var(--border);margin:16px 0;"></div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;font-size:0.82rem;color:var(--muted);">
+            <div><span style="color:#10b981;font-weight:700;">✓</span> &nbsp;Unlimited API calls</div>
+            <div><span style="color:#10b981;font-weight:700;">✓</span> &nbsp;All endpoints</div>
+            <div><span style="color:#10b981;font-weight:700;">✓</span> &nbsp;White-label option</div>
+            <div><span style="color:#10b981;font-weight:700;">✓</span> &nbsp;BAA included</div>
+            <div><span style="color:#10b981;font-weight:700;">✓</span> &nbsp;Dedicated support + SLA</div>
+            <div><span style="color:#10b981;font-weight:700;">✓</span> &nbsp;Custom integrations</div>
+          </div>
+          <a href="mailto:api@pillpal.app?subject=Enterprise API Plan" style="display:block;text-align:center;padding:10px;border:1.5px solid var(--border);color:var(--text);border-radius:8px;font-size:0.85rem;font-weight:700;text-decoration:none;transition:background .15s;" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background='transparent'">Contact Us</a>
+        </div>
+
+      </div>
+
+      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:20px;">All plans billed monthly. Cancel anytime.</p>
+
+      <a href="/pricing.html" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:var(--blue);color:#fff;border-radius:8px;font-size:0.875rem;font-weight:700;text-decoration:none;">View Full Pricing →</a>
+
+      <div class="callout tip" style="margin-top:24px;">
         <span class="callout-icon">💬</span>
-        <div>Need higher limits or custom integrations? Email <a href="mailto:api@pillpal.app">api@pillpal.app</a> — we'll set up an Enterprise plan for you.</div>
+        <div>Need a custom volume deal or have questions? Email <a href="mailto:api@pillpal.app">api@pillpal.app</a> and we'll find the right plan for you.</div>
       </div>
     </div>
 
