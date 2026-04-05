@@ -6,7 +6,14 @@
       "Bash(node -e ':*)",
       "Bash(node --check server.js)",
       "Bash(grep -n \"Free\\\\|free\\\\|\\\\$0\\\\|5 scans\\\\|No signup\\\\|no signup\\\\|scan-limit\\\\|scan_limit\\\\|incrementUser\" C:/Users/DELL/pill-pal/public/landing.html)",
-      "Bash(grep -i \"free\\\\|\\\\$0\\\\|scan\\\\|signup needed\")"
+      "Bash(grep -i \"free\\\\|\\\\$0\\\\|scan\\\\|signup needed\")",
+      "Bash(sed -i 's|<title>Pill Pal – AI Medicine Intelligence</title>|<title>RxSnap — AI Medicine Intelligence</title>|g' public/index.html)",
+      "Bash(sed -i 's|<title>RxSnap – Your AI Medicine Expert</title>|<title>RxSnap — AI Medicine Intelligence</title>|g' public/landing.html)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(python3:*)",
+      "Bash(grep -n \"fetch\\('/api/\\\\|fetch\\(\\\\`/api/\" /c/Users/DELL/pill-pal/public/index.html)"
     ]
   }
 }
