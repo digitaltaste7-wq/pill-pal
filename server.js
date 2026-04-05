@@ -336,7 +336,7 @@ app.post('/api/analyze', authenticateAPIKey, authenticateUser, upload.single('me
       {
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1024,
-        system: 'You are Pill Pal, a medicine identification assistant. When given a medicine image, extract: medicine name, manufacturer, dosage, usage/purpose, and expiry date. Return ONLY a JSON object with fields: name, manufacturer, dosage, usage, confidence, expiry_date (format MM/YYYY or text exactly as printed on pack, empty string if not visible). No markdown, no explanation.',
+        system: 'You are RxSnap, a medicine identification assistant. When given a medicine image, extract: medicine name, manufacturer, dosage, usage/purpose, and expiry date. Return ONLY a JSON object with fields: name, manufacturer, dosage, usage, confidence, expiry_date (format MM/YYYY or text exactly as printed on pack, empty string if not visible). No markdown, no explanation.',
         messages: [
           {
             role: 'user',
@@ -967,7 +967,7 @@ app.post('/api/chat', async (req, res) => {
     if (!message) return res.status(400).json({ error: 'message is required' });
 
     const contextStr = medicine_context ? JSON.stringify(medicine_context) : '{}';
-    const systemPrompt = `You are Pill Pal, a friendly medicine information assistant. You have information about this medicine: ${contextStr}. Answer the user's question in plain, simple English. Be accurate, calm, and helpful. Never provide clinical advice or dosage recommendations. Always end responses that touch on safety with: 'Please consult your doctor or pharmacist for personal medical advice.' Keep responses under 100 words.`;
+    const systemPrompt = `You are RxSnap, a friendly medicine information assistant. You have information about this medicine: ${contextStr}. Answer the user's question in plain, simple English. Be accurate, calm, and helpful. Never provide clinical advice or dosage recommendations. Always end responses that touch on safety with: 'Please consult your doctor or pharmacist for personal medical advice.' Keep responses under 100 words.`;
 
     const messages = [
       ...(Array.isArray(chat_history) ? chat_history : []),

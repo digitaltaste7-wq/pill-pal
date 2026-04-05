@@ -1,6 +1,6 @@
 {
-  "name": "Pill Pal",
-  "short_name": "Pill Pal",
+  "name": "RxSnap",
+  "short_name": "RxSnap",
   "description": "AI-powered medicine intelligence",
   "start_url": "/",
   "display": "standalone",
